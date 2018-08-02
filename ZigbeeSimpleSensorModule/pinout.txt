@@ -1,0 +1,29 @@
+                           ATtiny816
+                       +---------------+
+                  VDD -| 1          20 |- GND
+  SENSOR_nENABLE  PA4 -| 2          19 |- PA3  AIN_LIGHT
+          CHARGE  PA5 -| 3          18 |- PA2  AIN_TEMP
+          BUTTON  PA6 -| 4          17 |- PA1  AIN_VBATT
+             LED  PA7 -| 5          16 |- PA0  nRESET        UPDI
+        ZB_nATTN  PB5 -| 6          15 |- PC3  ZB_SPI_nSS
+       ZB_nRESET  PB4 -| 7          14 |- PC2  ZB_SPI_MOSI
+       USART_RXD  PB3 -| 8          13 |- PC1  ZB_SPI_MISO
+       USART_TXD  PB2 -| 9          12 |- PC0  ZB_SPI_SCK
+    ZB_ON_nSLEEP  PB1 -| 10         11 |- PB0  ZB_SLEEP_RQ
+                       +---------------+
+
+
+                          XBee S2C TH
+                         +-----------+
+                        /             \
+                  VCC -| 1          20 |- DIO0  AD0  COMMISSIONING_BUTTON
+           TXD  DIO13 -| 2          19 |- DIO1  AD1  SPI_nATTN
+ nCONFIG   RXD  DIO14 -| 3          18 |- DIO2  AD2  SPI_CLK
+SPI_MISO        DIO12 -| 4          17 |- DIO3  AD3  SPI_nSSEL
+               nRESET -| 5          16 |- DIO6       nRTS
+    RSSI  PWM0  DIO10 -| 6          15 |- DIO5       ASSOCIATE
+          PWM1  DIO11 -| 7          14 |- VREF
+                      -| 8          13 |- DIO9       ON_nSLEEP
+SLEEP_RQ  nDTR   DIO8 -| 9          12 |- DIO7       nCTS
+                  GND -| 10         11 |- DIO4       SPI_MOSI
+                       +---------------+
