@@ -11,5 +11,6 @@
 
 void sensor_init();
 void sensor_activate(const uint8_t activate);
+void sensor_read();
 
 #endif

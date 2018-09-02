@@ -161,6 +161,12 @@
     <Compile Include="lib\gpio.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="lib\rtc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lib\rtc.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="lib\spi.c">
       <SubType>compile</SubType>
     </Compile>
