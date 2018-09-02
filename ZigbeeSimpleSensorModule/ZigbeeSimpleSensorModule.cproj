@@ -98,58 +98,88 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <ToolchainSettings>
       <AvrGcc>
-  <avrgcc.common.Device>-mmcu=attiny816 -B "%24(PackRepoDir)\atmel\ATtiny_DFP\1.3.172\gcc\dev\attiny816"</avrgcc.common.Device>
-  <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
-  <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
-  <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
-  <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
-  <avrgcc.common.outputfiles.usersignatures>False</avrgcc.common.outputfiles.usersignatures>
-  <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
-  <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
-  <avrgcc.compiler.symbols.DefSymbols>
-    <ListValues>
-      <Value>DEBUG</Value>
-    </ListValues>
-  </avrgcc.compiler.symbols.DefSymbols>
-  <avrgcc.compiler.directories.IncludePaths>
-    <ListValues>
-      <Value>%24(PackRepoDir)\atmel\ATtiny_DFP\1.3.172\include</Value>
-    </ListValues>
-  </avrgcc.compiler.directories.IncludePaths>
-  <avrgcc.compiler.optimization.level>Optimize debugging experience (-Og)</avrgcc.compiler.optimization.level>
-  <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
-  <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
-  <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
-  <avrgcc.compiler.optimization.OtherDebuggingFlags>-D_DEBUG</avrgcc.compiler.optimization.OtherDebuggingFlags>
-  <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
-  <avrgcc.linker.libraries.Libraries>
-    <ListValues>
-      <Value>libm</Value>
-    </ListValues>
-  </avrgcc.linker.libraries.Libraries>
-  <avrgcc.assembler.general.IncludePaths>
-    <ListValues>
-      <Value>%24(PackRepoDir)\atmel\ATtiny_DFP\1.3.172\include</Value>
-    </ListValues>
-  </avrgcc.assembler.general.IncludePaths>
-  <avrgcc.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcc.assembler.debugging.DebugLevel>
-</AvrGcc>
+        <avrgcc.common.Device>-mmcu=attiny816 -B "%24(PackRepoDir)\atmel\ATtiny_DFP\1.3.172\gcc\dev\attiny816"</avrgcc.common.Device>
+        <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
+        <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
+        <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
+        <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
+        <avrgcc.common.outputfiles.usersignatures>False</avrgcc.common.outputfiles.usersignatures>
+        <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
+        <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
+        <avrgcc.compiler.symbols.DefSymbols>
+          <ListValues>
+            <Value>DEBUG</Value>
+          </ListValues>
+        </avrgcc.compiler.symbols.DefSymbols>
+        <avrgcc.compiler.directories.IncludePaths>
+          <ListValues>
+            <Value>%24(PackRepoDir)\atmel\ATtiny_DFP\1.3.172\include</Value>
+          </ListValues>
+        </avrgcc.compiler.directories.IncludePaths>
+        <avrgcc.compiler.optimization.level>Optimize debugging experience (-Og)</avrgcc.compiler.optimization.level>
+        <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
+        <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
+        <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
+        <avrgcc.compiler.optimization.OtherDebuggingFlags>-D_DEBUG</avrgcc.compiler.optimization.OtherDebuggingFlags>
+        <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
+        <avrgcc.linker.libraries.Libraries>
+          <ListValues>
+            <Value>libm</Value>
+          </ListValues>
+        </avrgcc.linker.libraries.Libraries>
+        <avrgcc.assembler.general.IncludePaths>
+          <ListValues>
+            <Value>%24(PackRepoDir)\atmel\ATtiny_DFP\1.3.172\include</Value>
+          </ListValues>
+        </avrgcc.assembler.general.IncludePaths>
+        <avrgcc.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcc.assembler.debugging.DebugLevel>
+      </AvrGcc>
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="atcommands.h">
+    <Compile Include="lib\adc.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="debug.c">
+    <Compile Include="lib\adc.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="debug.h">
+    <Compile Include="lib\clk.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="gpio.c">
+    <Compile Include="lib\clk.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="gpio.h">
+    <Compile Include="lib\debug.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lib\debug.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lib\gpio.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lib\gpio.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lib\spi.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lib\spi.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lib\usart.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lib\usart.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lib\vref.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lib\vref.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="platform_attinyX16.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="sensors.c">
@@ -158,37 +188,22 @@
     <Compile Include="sensors.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="spi.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="clk.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="clk.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="platform.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="spi.h">
+    <Compile Include="xbee\atcommands.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="usart.c">
+    <Compile Include="xbee\xbee.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="usart.h">
+    <Compile Include="xbee\xbee.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="xbee.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="xbee.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="xbeeapi.h">
+    <Compile Include="xbee\xbeeapi.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>
@@ -196,6 +211,10 @@
     <None Include="pinout.txt">
       <SubType>compile</SubType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="lib" />
+    <Folder Include="xbee" />
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />
 </Project>

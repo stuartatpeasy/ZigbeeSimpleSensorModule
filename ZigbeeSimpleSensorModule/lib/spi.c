@@ -6,22 +6,10 @@
 
 #include "spi.h"
 #include "gpio.h"
-#include "platform.h"
+#include "../platform.h"
 
 
 static GPIOPin_t SPI_nSS;
-
-
-// spi_init() - configure the SPI peripheral by selecting a pin-set and a clock divider, calling
-// spi0_configure_master() (which has additional side-effects - see the comments above that
-// function), then activating and enabling the SPI port.
-//
-void spi0_init(const SPI_PINSET_t pinset, const SPI_CLK_DIV_t div)
-{
-    spi0_configure_master(pinset, div);
-    spi0_port_activate(1);
-    spi0_enable(1);
-}
 
 
 // spi0_configure_master() - configure the SPI0 peripheral as a master, and set its clock divider

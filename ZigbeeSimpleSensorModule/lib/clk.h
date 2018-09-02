@@ -6,7 +6,7 @@
     Stuart Wallace <stuartw@atom.net>, July 2018.
 */
 
-#include "platform.h"           // for F_CPU
+#include "../platform.h"        // for F_CPU
 #include <avr/io.h>
 
 #define PCLK_DIVISOR_RESERVED       ((CLKCTRL_PDIV_t) 0xff)

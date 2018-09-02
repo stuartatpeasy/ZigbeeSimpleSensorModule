@@ -5,7 +5,7 @@
 */
 
 #include "sensors.h"
-#include "gpio.h"
+#include "lib/gpio.h"
 #include "platform.h"
 
 

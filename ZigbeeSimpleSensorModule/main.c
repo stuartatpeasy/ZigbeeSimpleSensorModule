@@ -11,14 +11,16 @@
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <util/delay.h>
-#include "atcommands.h"
-#include "clk.h"
-#include "debug.h"
-#include "gpio.h"
+//#include "atcommands.h"
+#include "lib/adc.h"
+#include "lib/clk.h"
+#include "lib/debug.h"
+#include "lib/gpio.h"
+#include "lib/spi.h"
+#include "lib/usart.h"
+#include "lib/vref.h"
 #include "sensors.h"
-#include "spi.h"
-#include "usart.h"
-#include "xbee.h"
+#include "xbee/xbee.h"
 
 
 typedef struct APIFrame
@@ -31,20 +33,10 @@ typedef struct APIFrame
 //
 // Port pin definitions
 //
-/*
-#define PORTA_SAMP_EN_LIGHT		(1 << 6)			// Enable signal for light sensor
-#define PORTA_SAMP_EN_TEMP		(1 << 5)			// Enable signal for temperature sensor
-#define PORTA_SAMP_nEN_VBATT	(1 << 4)			// Enable signal for battery voltage sensor
-*/
 #define PORTA_AIN_LIGHT			(1 << 3)			// Analogue input for light sensor
 #define PORTA_AIN_TEMP			(1 << 2)			// Analogue input for temperature sensor
 #define PORTA_AIN_VBATT			(1 << 1)			// Analogue input for battery voltage sensor
 #define PORTA_0_UNUSED			(1 << 0)
-
-/*
-#define PORTA_OUTPUTS			(PORTA_SAMP_EN_LIGHT | PORTA_SAMP_EN_TEMP \
-								 | PORTA_SAMP_nEN_VBATT | PORTA_0_UNUSED)
-*/
 
 #define ADC_VBATT				ADC_MUXPOS_AIN1_gc	// Battery voltage input
 #define ADC_TEMP				ADC_MUXPOS_AIN2_gc	// Thermistor input
@@ -75,8 +67,8 @@ void do_stuff()
 
 	sensor_activate(1);                         // Enable analogue sensors
 
-	VREF_CTRLB |= VREF_ADC0REFEN_bm;			// Enable ADC voltage reference
-	ADC0_CTRLA |= ADC_ENABLE_bm;				// Enable ADC module
+    vref_enable(VREF_ADC0, 1);      			// Enable ADC voltage reference
+    adc_enable(1);                              // Enable ADC module
 
 	_delay_us(50);								// Wait for the sensors to stabilise
 
@@ -84,8 +76,8 @@ void do_stuff()
 //	raw_temp = adc_do_conversion(ADC_TEMP);		// Measure temperature
 //	raw_light = adc_do_conversion(ADC_LIGHT);	// Measure light level
 
-	ADC0_CTRLA &= ~ADC_ENABLE_bm;				// Disable ADC
-	VREF_CTRLB &= ~VREF_ADC0REFEN_bm;			// Disable voltage reference
+    adc_enable(0);                              // Disable ADC
+    vref_enable(VREF_ADC0, 0);          		// Disable voltage reference
 
 	sensor_activate(0);                         // Disable analogue sensors
 
@@ -110,50 +102,7 @@ void do_stuff()
     xbee_wait_power_state(XBEE_WAKE);           // Wait for the XBee module to wake up
 
     spi0_enable(1);                             // Enable SPI interface
-/*
-    xbee_tx.frame_type = XBEE_FRAME_AT_COMMAND;
-    xbee_tx.at.frame_id = 0x01;
-    xbee_tx.at.cmd = AT_CMD_ATSM;
-    xbee_tx.at.parameter_value[0] = SLEEP_MODE_PIN_SLEEP;
-    xbee_tx.len = 4;
 
-    ret = xbee_spi_transaction();
-    if(ret & XBEE_RX_SUCCESS)
-        xbee_handle_packet();
-
-    while(!xbee_attn())
-        ;
-
-    xbee_tx.frame_type = XBEE_FRAME_AT_COMMAND;
-    xbee_tx.at.frame_id = 0x02;
-    xbee_tx.at.cmd = AT_CMD_ATSH;
-    xbee_tx.len = 3;
-
-    ret = xbee_spi_transaction();
-    if(ret & XBEE_RX_SUCCESS)
-        xbee_handle_packet();
-
-    while(!xbee_attn())
-        ;
-
-    xbee_tx.frame_type = XBEE_FRAME_AT_COMMAND;
-    xbee_tx.at.frame_id = 0x03;
-    xbee_tx.at.cmd = AT_CMD_ATSL;
-    xbee_tx.len = 3;
-
-    ret = xbee_spi_transaction();
-    if(ret & XBEE_RX_SUCCESS)
-        xbee_handle_packet();
-
-    while(!xbee_attn())
-        ;
-
-    xbee_tx.frame_type = XBEE_FRAME_NONE;
-    xbee_tx.len = 0;
-    ret = xbee_spi_transaction();
-    if(ret & XBEE_RX_SUCCESS)
-        xbee_handle_packet();
-*/
     spi0_enable(0);                             // Disable SPI peripheral
 
     gpio_clear(PIN_LED);
@@ -180,7 +129,10 @@ int main(void)
     pclk_set_divisor_val(2);                        // Set peripheral clock = main clock / 2
     pclk_enable();                                  // Enable peripheral clock
 
-    spi0_init(SPI_PINSET_ALTERNATE, SPI_CLK_DIV4);  // Configure, initialise and activate SPI port
+    // Configure, activate and enable the SPI port
+    spi0_configure_master(SPI_PINSET_ALTERNATE, SPI_CLK_DIV4);
+    spi0_port_activate(1);
+    spi0_enable(1);
 
     gpio_make_output(PIN_LED);                      // Make the LED control pin an output
     gpio_clear(PIN_LED);                            // Switch off the LED
@@ -194,12 +146,16 @@ int main(void)
 	PORTA_PIN2CTRL = PORT_ISC_INPUT_DISABLE_gc;
 	PORTA_PIN3CTRL = PORT_ISC_INPUT_DISABLE_gc;
 
-	VREF_CTRLA = VREF_ADC0REFSEL_2V5_gc;		    // Select 2.5V internal reference for ADCs
+    // Configure clock
 
-	// Set reduced value of sampling capacitor (recommended for reference voltages above 1V)
-	ADC0_CTRLC = ADC_SAMPCAP_bm;
+    //
+    // Configure internal voltage reference and ADC
+    //
+    vref_set(VREF_ADC0, VREF_2V5);      		    // Select 2.5V internal reference for ADCs
 
-	ADC0_CTRLD = ADC_INITDLY_DLY128_gc;			    // Set 128-pclk cycle startup delay on ADC
+    adc_set_vref(ADC_REF_INTERNAL, 1);              // Set ADC ref voltage and reduce sample cap
+    adc_set_prescaler(ADC_PRESCALE_DIV64);          // Set ADC clock = main clock / 64
+    adc_set_initdelay(ADC_INITDELAY_64);
 
 	//
 	// Configure RTC and periodic interrupt timer (PIT)

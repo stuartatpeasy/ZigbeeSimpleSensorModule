@@ -5,10 +5,10 @@
 */
 
 #include "xbee.h"
-#include "debug.h"
-#include "gpio.h"
-#include "platform.h"
-#include "spi.h"
+#include "../lib/debug.h"
+#include "../lib/gpio.h"
+#include "../lib/spi.h"
+#include "../platform.h"
 #include <util/delay.h>
 
 

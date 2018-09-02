@@ -72,7 +72,6 @@ typedef enum SPI_CLK_DIV
 #define spi0_read()         SPI0_DATA
 
 
-void spi0_init(const SPI_PINSET_t pinset, const SPI_CLK_DIV_t div);
 void spi0_configure_master(const SPI_PINSET_t pinset, const SPI_CLK_DIV_t div);
 void spi0_port_activate(const uint8_t activate);
 void spi0_enable(const uint8_t enable);
