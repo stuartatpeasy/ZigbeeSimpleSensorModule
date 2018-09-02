@@ -9,9 +9,7 @@
 #include <avr/io.h>
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
-#include <avr/pgmspace.h>
 #include <util/delay.h>
-//#include "atcommands.h"
 #include "lib/adc.h"
 #include "lib/clk.h"
 #include "lib/debug.h"
@@ -38,33 +36,17 @@ typedef struct APIFrame
 #define PORTA_AIN_VBATT			(1 << 1)			// Analogue input for battery voltage sensor
 #define PORTA_0_UNUSED			(1 << 0)
 
-#define ADC_VBATT				ADC_MUXPOS_AIN1_gc	// Battery voltage input
-#define ADC_TEMP				ADC_MUXPOS_AIN2_gc	// Thermistor input
-#define ADC_LIGHT				ADC_MUXPOS_AIN3_gc	// Light sensor input
-
-uint16_t adc_do_conversion(const ADC_MUXPOS_t channel);
+#define ADC_VBATT				ADC_CHANNEL_1       // Battery voltage input
+#define ADC_TEMP				ADC_CHANNEL_2       // Thermistor input
+#define ADC_LIGHT				ADC_CHANNEL_3       // Light sensor input
 
 
-// adc_do_conversion() - perform a conversion on the channel specific by <channel>.  Busy-wait
-// until the conversion is complete, and return the result.
-//
-uint16_t adc_do_conversion(const ADC_MUXPOS_t channel)
+void handle_periodic_irq()
 {
-	ADC0_MUXPOS = channel;						// Set channel multiplexer
-	ADC0_COMMAND |= ADC_STCONV_bm;				// Start conversion
+	uint16_t raw_vbatt, raw_temp, raw_light;
 
-	while(ADC0_COMMAND & ADC_STCONV_bm)			// Wait for conversion to complete
-		;
-
-	return ADC0_RES;
-}
-
-
-void do_stuff()
-{
-#if 0
-//	uint16_t raw_vbatt, raw_temp, raw_light;
-
+    gpio_set(PIN_LED);
+    xbee_set_power_state(XBEE_WAKE);            // Wake XBee module
 	sensor_activate(1);                         // Enable analogue sensors
 
     vref_enable(VREF_ADC0, 1);      			// Enable ADC voltage reference
@@ -72,9 +54,17 @@ void do_stuff()
 
 	_delay_us(50);								// Wait for the sensors to stabilise
 
-//	raw_vbatt = adc_do_conversion(ADC_VBATT);	// Measure battery voltage
-//	raw_temp = adc_do_conversion(ADC_TEMP);		// Measure temperature
-//	raw_light = adc_do_conversion(ADC_LIGHT);	// Measure light level
+    raw_vbatt = adc_convert_channel(ADC_VBATT); // Measure battery voltage
+    raw_temp = adc_convert_channel(ADC_TEMP);   // Measure temperature
+    raw_light = adc_convert_channel(ADC_LIGHT); // Measure light level
+
+    debug_putstr_p("vbatt=");
+    debug_puthex_word(raw_vbatt);
+    debug_putstr_p(" temp=");
+    debug_puthex_word(raw_temp);
+    debug_putstr_p(" light=");
+    debug_puthex_word(raw_light);
+    debug_putchar('\n');
 
     adc_enable(0);                              // Disable ADC
     vref_enable(VREF_ADC0, 0);          		// Disable voltage reference
@@ -93,31 +83,15 @@ void do_stuff()
     spi0_slave_select(0);                       // De-select the SPI slave
     spi0_enable(0);                             // Disable SPI peripheral
     spi0_port_activate(0);                      // Deactivate the port
-#endif
 
-    ////////////////////////////////// temporary code //////////////////////////////
-//    uint8_t ret;
-
-    gpio_set(PIN_LED);
-    xbee_wait_power_state(XBEE_WAKE);           // Wait for the XBee module to wake up
-
-    spi0_enable(1);                             // Enable SPI interface
-
-    spi0_enable(0);                             // Disable SPI peripheral
-
+    xbee_set_power_state(XBEE_SLEEP);           // Ask the XBee module to go to sleep
     gpio_clear(PIN_LED);
-    ////////////////////////////////// temporary code //////////////////////////////
 }
 
 
 ISR(RTC_PIT_vect)
 {
-    xbee_set_power_state(XBEE_WAKE);            // Wake XBee module
-
-    do_stuff();
-
-    xbee_set_power_state(XBEE_SLEEP);           // Ask the XBee module to go to sleep
-
+    handle_periodic_irq();
 	RTC_PITINTFLAGS = 1;	                    // Clear periodic interrupt flag
 }
 
@@ -137,16 +111,8 @@ int main(void)
     gpio_make_output(PIN_LED);                      // Make the LED control pin an output
     gpio_clear(PIN_LED);                            // Switch off the LED
 
-    debug_init();
-
-	//
-	// Configure ADCs (Port A pins 1..3)
-	//
-	PORTA_PIN1CTRL = PORT_ISC_INPUT_DISABLE_gc;
-	PORTA_PIN2CTRL = PORT_ISC_INPUT_DISABLE_gc;
-	PORTA_PIN3CTRL = PORT_ISC_INPUT_DISABLE_gc;
-
-    // Configure clock
+    debug_init();                                   // Init debugging - this is a NOP in release mode
+    sensor_init();                                  // Initialise sensors
 
     //
     // Configure internal voltage reference and ADC
@@ -154,8 +120,12 @@ int main(void)
     vref_set(VREF_ADC0, VREF_2V5);      		    // Select 2.5V internal reference for ADCs
 
     adc_set_vref(ADC_REF_INTERNAL, 1);              // Set ADC ref voltage and reduce sample cap
-    adc_set_prescaler(ADC_PRESCALE_DIV64);          // Set ADC clock = main clock / 64
-    adc_set_initdelay(ADC_INITDELAY_64);
+    adc_set_prescaler(ADC_PRESCALE_DIV_64);         // Set ADC clock = main clock / 64
+    adc_set_initdelay(ADC_INITDELAY_64);            // Set ADC startup delay to 64 ADC clocks
+
+    adc_configure_input(PIN_AIN_VBATT);             // }
+    adc_configure_input(PIN_AIN_TEMP);              // } Configure analogue inputs as ADC input pins
+    adc_configure_input(PIN_AIN_LIGHT);             // }
 
 	//
 	// Configure RTC and periodic interrupt timer (PIT)
@@ -172,8 +142,6 @@ int main(void)
 
     xbee_init();                                    // Initialise the XBee module interface
     xbee_configure();                               // Set initial configuration in the XBee module
-
-    // TODO - do any necessary initialisation of the XBee module
     xbee_set_power_state(XBEE_SLEEP);               // Put the XBee module to sleep
 
     debug_flush();

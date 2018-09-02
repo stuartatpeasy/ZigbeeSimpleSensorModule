@@ -41,6 +41,16 @@ void adc_set_initdelay(const ADC_INITDELAY_t delay)
 }
 
 
+// adc_configure_input() - prepare the specified pin to act as an ADC input by disabling its
+// digital input buffer and making it an input.
+//
+void adc_configure_input(const GPIOPin_t pin)
+{
+    gpio_set_sense(pin, GPIOSense_INPUTDISABLE);
+    gpio_make_input(pin);
+}
+
+
 // adc_enable() - enable (if <enable> is non-zero) or disable (if <enable> equals zero) the ADC.
 //
 void adc_enable(const uint8_t enable)
@@ -51,4 +61,35 @@ void adc_enable(const uint8_t enable)
         ADC0_CTRLA |= mask;
     else
         ADC0_CTRLA &= ~mask;
+}
+
+
+// adc_set_channel() - connect the channel specified by <channel> to the ADC input.
+//
+void adc_set_channel(const ADC_CHANNEL_t channel)
+{
+    ADC0_MUXPOS = channel;
+}
+
+
+// adc_convert() - perform a conversion on the currently-selected channel and return the result.
+//
+uint16_t adc_convert()
+{
+    ADC0_COMMAND |= ADC_STCONV_bm;              // Start conversion
+
+    while(!(ADC0_INTFLAGS & ADC_RESRDY_bm))     // Wait for conversion to complete
+        ;
+
+    return ADC0_RES;
+}
+
+
+// adc_convert_channel() - connect the channel specified by <channel> to the ADC input, perform a
+// conversion, and return the result.
+//
+uint16_t adc_convert_channel(const ADC_CHANNEL_t channel)
+{
+    adc_set_channel(channel);
+    return adc_convert();
 }

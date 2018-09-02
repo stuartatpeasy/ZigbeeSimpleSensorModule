@@ -5,16 +5,15 @@
 */
 
 #include "gpio.h"
-#include <avr/io.h>
 #include <avr/pgmspace.h>
 
 
 // Array of GPIO-manipulation registers
 volatile uint8_t * const reg_map[] PROGMEM =
 {
-    &PORTA_DIRSET, &PORTA_DIRCLR, &PORTA_OUTSET, &PORTA_OUTCLR, &PORTA_IN, &PORTA_DIR,
-    &PORTB_DIRSET, &PORTB_DIRCLR, &PORTB_OUTSET, &PORTB_OUTCLR, &PORTB_IN, &PORTB_DIR,
-    &PORTC_DIRSET, &PORTC_DIRCLR, &PORTC_OUTSET, &PORTC_OUTCLR, &PORTC_IN, &PORTC_DIR
+    &PORTA_DIRSET, &PORTA_DIRCLR, &PORTA_OUTSET, &PORTA_OUTCLR, &PORTA_IN, &PORTA_DIR, &PORTA_PIN0CTRL,
+    &PORTB_DIRSET, &PORTB_DIRCLR, &PORTB_OUTSET, &PORTB_OUTCLR, &PORTB_IN, &PORTB_DIR, &PORTB_PIN0CTRL,
+    &PORTC_DIRSET, &PORTC_DIRCLR, &PORTC_OUTSET, &PORTC_OUTCLR, &PORTC_IN, &PORTC_DIR, &PORTC_PIN0CTRL
 };
 
 
@@ -66,4 +65,12 @@ void gpio_wait_low(const GPIOPin_t pin)
 
     while(*reg & (1 << pin.pin))
         ;
+}
+
+
+// gpio_set_sense() - set the input/sense configuration for a pin
+//
+void gpio_set_sense(const GPIOPin_t pin, const GPIOSense_t sense)
+{
+    *(register_address(pin, GPIOAction_PINCTRL) + pin.pin) = sense;
 }

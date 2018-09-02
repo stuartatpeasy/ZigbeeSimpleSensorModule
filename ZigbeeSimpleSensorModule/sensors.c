@@ -9,12 +9,19 @@
 #include "platform.h"
 
 
+// sensor_init() - initialise sensor system by configuring the SENSOR_nENABLE pin as an output, and
+// negating the value on the pin via a call to sensor_activate().
+//
 void sensor_init()
 {
     gpio_make_output(PIN_SENSOR_nENABLE);
+    sensor_activate(0);
 }
 
 
+// sensor_activate() - activate (if <activate> is non-zero) or de-activate (if <activate> equals
+// zero) sensors by asserting or negating the SENSOR_nENABLE output pin.
+//
 void sensor_activate(const uint8_t activate)
 {
     if(activate)

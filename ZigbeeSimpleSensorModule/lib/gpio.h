@@ -7,6 +7,7 @@
 */
 
 #include <stdint.h>
+#include <avr/io.h>
 
 
 // GPIOPort_t - enumeration of GPIO ports.  This list is specific to the smaller ATTiny models.
@@ -27,8 +28,8 @@ typedef struct GPIOPin
 } GPIOPin_t;
 
 
-// List of allowable GPIO "actions".  These will be used, together with a port identifier, by
-// gpio_do_action() when it is calculating a register address.
+// GPIOAction_t - list of allowable GPIO "actions".  These will be used, together with a port
+// identifier, by gpio_do_action() when it is calculating a register address.
 //
 typedef enum GPIOAction
 {
@@ -38,8 +39,22 @@ typedef enum GPIOAction
     GPIOAction_OUTCLR = 3,
     GPIOAction_READ = 4,
     GPIOAction_DIRGET = 5,
+    GPIOAction_PINCTRL = 6,
     GPIOAction_end
 } GPIOAction_t;
+
+
+// GPIOSense_t - list of possible pin input/sense configurations.
+//
+typedef enum GPIOSense
+{
+    GPIOSense_INTDISABLE    = PORT_ISC_INTDISABLE_gc,
+    GPIOSense_BOTHEDGES     = PORT_ISC_BOTHEDGES_gc,
+    GPIOSense_RISING        = PORT_ISC_RISING_gc,
+    GPIOSense_FALLING       = PORT_ISC_FALLING_gc,
+    GPIOSense_INPUTDISABLE  = PORT_ISC_INPUT_DISABLE_gc,
+    GPIOSense_LEVEL         = PORT_ISC_LEVEL_gc
+} GPIOSense_t;
 
 
 #define GPIO_PIN_MAX            (7)
@@ -69,5 +84,6 @@ uint8_t gpio_action_read(const GPIOPin_t pin, const GPIOAction_t action);
 
 void gpio_wait_high(const GPIOPin_t pin);
 void gpio_wait_low(const GPIOPin_t pin);
+void gpio_set_sense(const GPIOPin_t pin, const GPIOSense_t sense);
 
 #endif
