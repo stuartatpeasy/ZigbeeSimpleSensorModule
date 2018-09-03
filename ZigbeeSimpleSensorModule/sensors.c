@@ -13,9 +13,9 @@
 #include <util/delay.h>
 
 
-#define ADCVBatt				ADCChannel1         // Battery voltage input
-#define ADCTemp				    ADCChannel2         // Thermistor input
-#define ADCLight				ADCChannel3         // Light sensor input
+#define ADCVBatt                ADCChannel1         // Battery voltage input
+#define ADCTemp                 ADCChannel2         // Thermistor input
+#define ADCLight                ADCChannel3         // Light sensor input
 
 
 // Struct which accumulates sensor values
@@ -36,7 +36,7 @@ static const uint8_t avg_len = 8;
 void sensor_init()
 {
     // Configure voltage reference module
-    vref_set(VRefADC0, VRef2V5);      		        // Select 2.5V internal reference for ADCs
+    vref_set(VRefADC0, VRef2V5);                    // Select 2.5V internal reference for ADCs
 
     // Configure ADC module
     adc_set_vref(ADCRefInternal, 1);                // Set ADC ref voltage and reduce sample cap
@@ -80,12 +80,12 @@ void sensor_activate(const uint8_t activate)
 //
 void sensor_read()
 {
-	sensor_activate(1);                         // Enable analogue sensors
+    sensor_activate(1);                         // Enable analogue sensors
 
-    vref_enable(VRefADC0, 1);      			// Enable ADC voltage reference
+    vref_enable(VRefADC0, 1);                   // Enable ADC voltage reference
     adc_enable(1);                              // Enable ADC module
 
-	_delay_us(50);								// Wait for the sensors to stabilise
+    _delay_us(50);                              // Wait for the sensors to stabilise
 
     acc.light -= ((acc.light + (avg_len / 2)) / avg_len);
     acc.light += adc_convert_channel(ADCLight);
@@ -97,9 +97,9 @@ void sensor_read()
     acc.vbatt += adc_convert_channel(ADCVBatt);
 
     adc_enable(0);                              // Disable ADC
-    vref_enable(VRefADC0, 0);          		// Disable voltage reference
+    vref_enable(VRefADC0, 0);                   // Disable voltage reference
 
-	sensor_activate(0);                         // Disable analogue sensors
+    sensor_activate(0);                         // Disable analogue sensors
 
     debug_putstr_p("vbatt=");
     debug_puthex_word((acc.vbatt + (avg_len / 2)) / avg_len);

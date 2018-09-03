@@ -35,7 +35,7 @@ void handle_periodic_irq()
         spi0_port_activate(1);                  // Activate SPI port pins
         spi0_enable(1);                         // Enable SPI interface
 
-	    // Transmit data
+        // Transmit data
         spi0_slave_select(1);
         // ... transmit all the datas ...
 
@@ -56,7 +56,7 @@ void handle_periodic_irq()
 ISR(RTC_PIT_vect)
 {
     handle_periodic_irq();
-	RTC_PITINTFLAGS = 1;	                    // Clear periodic interrupt flag
+    RTC_PITINTFLAGS = 1;	                    // Clear periodic interrupt flag
 }
 
 
@@ -79,9 +79,9 @@ int main(void)
 
     debug_init();                                   // Init debugging - this is a NOP in release mode
 
-	//
-	// Configure RTC and periodic interrupt timer (PIT)
-	//
+    //
+    // Configure RTC and periodic interrupt timer (PIT)
+    //
     rtc_set_clock(RTCClkInt1K);                     // Select 1kHz ULP osc output as RTC clock
 
     rtc_set_pit_period(RTCPITPeriod_8192);          // Set PIT IRQ period to 8192 RTC cycles
@@ -95,9 +95,9 @@ int main(void)
 
     debug_flush();
 
-	set_sleep_mode(SLEEP_MODE_PWR_DOWN);            // Set the lowest-power sleep mode
-	sei();                                          // Enable interrupts
+    set_sleep_mode(SLEEP_MODE_PWR_DOWN);            // Set the lowest-power sleep mode
+    sei();                                          // Enable interrupts
 
     while(1)
-		sleep_mode();                               // Await PIT wake-up interrupts
+        sleep_mode();                               // Await PIT wake-up interrupts
 }
