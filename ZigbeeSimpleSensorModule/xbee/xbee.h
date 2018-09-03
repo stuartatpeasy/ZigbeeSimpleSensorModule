@@ -17,19 +17,19 @@
 
 
 // Global transmit and receive packet buffers
-XBEE_PACKET_BUF_t xbee_rx, xbee_tx;
+XBeePacketBuf_t xbee_rx, xbee_tx;
 
 
-// Enumeration representing available XBee power states
-typedef enum XBEE_POWER_STATE
+// XBeePowerState_t - enumeration representing available XBee power states
+typedef enum XBeePowerState
 {
     XBEE_SLEEP,
     XBEE_WAKE
-} XBEE_POWER_STATE_t;
+} XBeePowerState_t;
 
 
-// Return type used by xbee_spi_transaction(), xbee_send_at_command(), etc.
-typedef uint8_t XBEE_TXN_STATUS_t;
+// XBeeTxnStatus_t - return type used by xbee_spi_transaction(), xbee_send_at_command(), etc.
+typedef uint8_t XBeeTxnStatus_t;
 
 // Flags used in the return value from xbee_spi_transaction(), xbee_send_at_command(), etc.
 #define XBEE_TX_SUCCESS                 (0x01)      // Packet was transmitted successfully
@@ -49,9 +49,9 @@ typedef uint8_t XBEE_TXN_STATUS_t;
 
 void xbee_init();
 void xbee_reset();
-void xbee_set_power_state(const XBEE_POWER_STATE_t state);
-void xbee_wait_power_state(const XBEE_POWER_STATE_t state);
-XBEE_TXN_STATUS_t xbee_spi_transaction();
+void xbee_set_power_state(const XBeePowerState_t state);
+void xbee_wait_power_state(const XBeePowerState_t state);
+XBeeTxnStatus_t xbee_spi_transaction();
 void xbee_configure();
 
 #ifdef _DEBUG

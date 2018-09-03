@@ -12,22 +12,24 @@
 #include <util/delay.h>
 
 
-XBEE_TXN_STATUS_t xbee_send_at_command(const AT_CMD_t command, const uint8_t param_len);
-XBEE_TXN_STATUS_t xbee_receive_packet();
-XBEE_TXN_STATUS_t xbee_do_at_command(const AT_CMD_t command, const uint8_t param_len);
+XBeeTxnStatus_t xbee_send_at_command(const XBeeATCmd_t command, const uint8_t param_len);
+XBeeTxnStatus_t xbee_receive_packet();
+XBeeTxnStatus_t xbee_do_at_command(const XBeeATCmd_t command, const uint8_t param_len);
 
 
-// Enumeration to express the state machine used for command transmission/reception
-typedef enum XBEE_CMD_STATE
+// XBeeCmdState_t - enumeration to express the state machine used for command
+// transmission/reception
+//
+typedef enum XBeeCmdState
 {
-    XBEE_CMD_STATE_IDLE,
-    XBEE_CMD_STATE_HEADER,
-    XBEE_CMD_STATE_LEN1,
-    XBEE_CMD_STATE_LEN2,
-    XBEE_CMD_STATE_FRAME_TYPE,
-    XBEE_CMD_STATE_DATA,
-    XBEE_CMD_STATE_CKSUM
-} XBEE_CMD_STATE_t;
+    XBeeCmdStateIdle,
+    XBeeCmdStateHeader,
+    XBeeCmdStateLen1,
+    XBeeCmdStateLen2,
+    XBeeCmdStateFrameType,
+    XBeeCmdStateData,
+    XBeeCmdStateCksum
+} XBeeCmdState_t;
 
 
 // xbee_init() - configure the sleep/wake and SPI_nATTN lines as inputs/outputs as appropriate, and
@@ -64,7 +66,7 @@ void xbee_reset()
 }
 
 
-void xbee_set_power_state(const XBEE_POWER_STATE_t state)
+void xbee_set_power_state(const XBeePowerState_t state)
 {
     if(state == XBEE_WAKE)
         gpio_clear(PIN_XBEE_SLEEP_RQ);
@@ -73,7 +75,7 @@ void xbee_set_power_state(const XBEE_POWER_STATE_t state)
 }
 
 
-void xbee_wait_power_state(const XBEE_POWER_STATE_t state)
+void xbee_wait_power_state(const XBeePowerState_t state)
 {
     if(state == XBEE_WAKE)
         gpio_wait_high(PIN_XBEE_ON_nSLEEP);
@@ -84,7 +86,7 @@ void xbee_wait_power_state(const XBEE_POWER_STATE_t state)
 
 // xbee_spi_transaction() - attempt to receive a data frame via the SPI bus, and optionally
 // simultaneously transmit a frame.  This function reads data from the buffer object in the global
-// variable <xbee_tx>. If <frame_type> != XBEE_FRAME_NONE, then the transmit buffer  is assumed to
+// variable <xbee_tx>. If <frame_type> != XBeeFrameNone, then the transmit buffer  is assumed to
 // contain data for an API frame of type <type> with ID <frame_id>.  In this case, the frame is
 // transmitted.  During transmission, the XBee module may send data to us;  in this case, the data
 // will be received in full (buffer space permitting) and written to the global <xbee_rx> buffer.
@@ -104,37 +106,37 @@ void xbee_wait_power_state(const XBEE_POWER_STATE_t state)
 //      XBEE_RX_FRAME_TOO_LONG  - a frame longer than the xbee_rx buffer was received and discarded
 //      XBEE_RX_BAD_CHECKSUM    - the received packet checksum is invalid; the packet was discarded
 //
-XBEE_TXN_STATUS_t xbee_spi_transaction()
+XBeeTxnStatus_t xbee_spi_transaction()
 {
     uint8_t txcount, rxcksum, txcksum, data, ret;
     int8_t retries;
     uint16_t packet_len;
-    XBEE_CMD_STATE_t rxstate, txstate;
+    XBeeCmdState_t rxstate, txstate;
 
     packet_len = txcount = rxcksum = txcksum = data = ret = 0;
 
-    // If the requested frame type is XBEE_FRAME_NONE, no frame will be transmitted but a frame
-    // may still be received.  In this case, we enter the main loop with <txstate> equal to
+    // If the requested frame type is XBeeFrameNone, no frame will be transmitted but a frame may
+    // still be received.  In this case, we enter the main loop with <txstate> equal to
     // XBEE_TX_DONE, which results in a stream of 0x00-value bytes being sent while packet
     // reception is in progress.  If a frame delimiter is not immediately received at the SPI port,
     // the loop will exit.
-    if(xbee_tx.frame_type == XBEE_FRAME_NONE)
+    if(xbee_tx.frame_type == XBeeFrameNone)
     {
         // We will only try to receive a frame - nothing will be transmitted.
-        txstate = XBEE_CMD_STATE_IDLE;      // No frame to transmit
+        txstate = XBeeCmdStateIdle;         // No frame to transmit
         retries = XBEE_RX_ONLY_RETRIES;     // Number of times to wait for a frame delimiter
     }
     else
     {
         // We will be transmitting a frame, and possibly also receiving one.
-        txstate = XBEE_CMD_STATE_HEADER;    // Start by transmitting a frame header
+        txstate = XBeeCmdStateHeader;       // Start by transmitting a frame header
         retries = 0;                        // No retries - don't hang around waiting for a frame
 
         // Size-validate the frame
         if(!xbee_tx.len || (xbee_tx.len >= XBEE_BUF_LEN))
             return XBEE_TX_BAD_FRAME_SIZE;
     }
-    rxstate = XBEE_CMD_STATE_IDLE;
+    rxstate = XBeeCmdStateIdle;
 
     spi0_slave_select(1);                   // Assert the SPI slave-select output
 
@@ -143,40 +145,40 @@ XBEE_TXN_STATUS_t xbee_spi_transaction()
         // Command-transmit state machine
         switch(txstate)
         {
-            case XBEE_CMD_STATE_HEADER:
+            case XBeeCmdStateHeader:
                 data = XBEE_FRAME_DELIMITER;
-                txstate = XBEE_CMD_STATE_LEN1;
+                txstate = XBeeCmdStateLen1;
                 break;
 
-            case XBEE_CMD_STATE_LEN1:
+            case XBeeCmdStateLen1:
                 data = (xbee_tx.len + 1) >> 8;
-                txstate = XBEE_CMD_STATE_LEN2;
+                txstate = XBeeCmdStateLen2;
                 break;
 
-            case XBEE_CMD_STATE_LEN2:
+            case XBeeCmdStateLen2:
                 data = (xbee_tx.len + 1) & 0xff;
-                txstate = XBEE_CMD_STATE_FRAME_TYPE;
+                txstate = XBeeCmdStateFrameType;
                 break;
 
-            case XBEE_CMD_STATE_FRAME_TYPE:
+            case XBeeCmdStateFrameType:
                 data = xbee_tx.frame_type;
                 txcksum += data;
-                txstate = XBEE_CMD_STATE_DATA;
+                txstate = XBeeCmdStateData;
                 break;
 
-            case XBEE_CMD_STATE_DATA:
+            case XBeeCmdStateData:
                 data = xbee_tx.raw[txcount++];
                 txcksum += data;
                 if(txcount == xbee_tx.len)
-                    txstate = XBEE_CMD_STATE_CKSUM;
+                    txstate = XBeeCmdStateCksum;
                 break;
 
-            case XBEE_CMD_STATE_CKSUM:
+            case XBeeCmdStateCksum:
                 data = 0xff - txcksum;
-                txstate = XBEE_CMD_STATE_IDLE;
+                txstate = XBeeCmdStateIdle;
                 break;
 
-            case XBEE_CMD_STATE_IDLE:
+            case XBeeCmdStateIdle:
                 data = 0x00;
                 break;
         }
@@ -188,61 +190,61 @@ XBEE_TXN_STATUS_t xbee_spi_transaction()
         // Command-receive state machine
         switch(rxstate)
         {
-            case XBEE_CMD_STATE_IDLE:
+            case XBeeCmdStateIdle:
                 if(data == XBEE_FRAME_DELIMITER)
                 {
                     xbee_rx.len = 0;
                     retries = 0;            // Found a frame - no need for any more retries
-                    rxstate = XBEE_CMD_STATE_LEN1;
+                    rxstate = XBeeCmdStateLen1;
                 }
                 break;
 
-            case XBEE_CMD_STATE_HEADER:
+            case XBeeCmdStateHeader:
                 // This state is not used in the "receive" state machine, and is unreachable.
                 // This case is present in order to suppress a compiler warning.
                 break;
 
-            case XBEE_CMD_STATE_LEN1:
+            case XBeeCmdStateLen1:
                 packet_len = data;
                 packet_len <<= 8;
-                rxstate = XBEE_CMD_STATE_LEN2;
+                rxstate = XBeeCmdStateLen2;
                 break;
 
-            case XBEE_CMD_STATE_LEN2:
+            case XBeeCmdStateLen2:
                 packet_len |= data;
-                rxstate = XBEE_CMD_STATE_FRAME_TYPE;
+                rxstate = XBeeCmdStateFrameType;
                 if(packet_len >= XBEE_BUF_LEN)
                     ret |= XBEE_RX_FRAME_TOO_LONG;
                 break;
 
-            case XBEE_CMD_STATE_FRAME_TYPE:
+            case XBeeCmdStateFrameType:
                 xbee_rx.frame_type = data;
                 rxcksum += data;
                 --packet_len;
-                rxstate = XBEE_CMD_STATE_DATA;
+                rxstate = XBeeCmdStateData;
                 break;
 
-            case XBEE_CMD_STATE_DATA:
+            case XBeeCmdStateData:
                 rxcksum += data;
                 if(!--packet_len)
-                    rxstate = XBEE_CMD_STATE_CKSUM;
+                    rxstate = XBeeCmdStateCksum;
                 if(xbee_rx.len < XBEE_BUF_LEN)
                     xbee_rx.raw[xbee_rx.len++] = data;
                 break;
 
-            case XBEE_CMD_STATE_CKSUM:
+            case XBeeCmdStateCksum:
                 if((0xff - rxcksum) != data)
                     ret |= XBEE_RX_BAD_CHECKSUM;
                 else if(!ret)
                     ret |= XBEE_RX_SUCCESS;
-                rxstate = XBEE_CMD_STATE_IDLE;
+                rxstate = XBeeCmdStateIdle;
                 break;
         }
-    } while((txstate != XBEE_CMD_STATE_IDLE) || (rxstate != XBEE_CMD_STATE_IDLE) || (retries-- > 0));
+    } while((txstate != XBeeCmdStateIdle) || (rxstate != XBeeCmdStateIdle) || (retries-- > 0));
 
     spi0_slave_select(0);                   // Negate the SPI slave-select output
 
-    if(xbee_tx.frame_type == XBEE_FRAME_NONE)
+    if(xbee_tx.frame_type == XBeeFrameNone)
     {
         // No frame transmission was requested, and the retry counter has expired.  Conclude that
         // we were expecting to receive a packet but didn't; set the appropriate error code.
@@ -263,9 +265,10 @@ XBEE_TXN_STATUS_t xbee_spi_transaction()
 // xbee_send_at_command() - send the AT command <command> to the XBee module.  Any command
 // parameters must be populated into <xbee_tx.at.parameter_value[]> by the caller before calling
 // this function.
-XBEE_TXN_STATUS_t xbee_send_at_command(const AT_CMD_t command, const uint8_t param_len)
+//
+XBeeTxnStatus_t xbee_send_at_command(const XBeeATCmd_t command, const uint8_t param_len)
 {
-    xbee_tx.frame_type = XBEE_FRAME_AT_COMMAND;
+    xbee_tx.frame_type = XBeeFrameATCommand;
     xbee_tx.at.cmd = command;
     xbee_tx.at.frame_id = 0x55;         // FIXME - move constant
     xbee_tx.len = param_len + sizeof(xbee_tx.at.cmd) + sizeof(xbee_tx.at.frame_id);
@@ -277,9 +280,9 @@ XBEE_TXN_STATUS_t xbee_send_at_command(const AT_CMD_t command, const uint8_t par
 // xbee_receive_packet_no_wait() - transmit dummy data in order to receive a packet from the XBee
 // device.  Do this without first waiting for the XBee to assert the SPI nATTN (attention) line.
 //
-XBEE_TXN_STATUS_t xbee_receive_packet_no_wait()
+XBeeTxnStatus_t xbee_receive_packet_no_wait()
 {
-    xbee_tx.frame_type = XBEE_FRAME_NONE;   // Set up a receive-only SPI transaction
+    xbee_tx.frame_type = XBeeFrameNone;   // Set up a receive-only SPI transaction
     xbee_tx.len = 0;
 
     return xbee_spi_transaction();          // Attempt to receive the command response
@@ -289,7 +292,7 @@ XBEE_TXN_STATUS_t xbee_receive_packet_no_wait()
 // xbee_receive_packet() - wait for the XBee to assert the SPI nATTN (attention) line, then
 // transmit dummy data in order to receive a packet from the XBee.
 //
-XBEE_TXN_STATUS_t xbee_receive_packet()
+XBeeTxnStatus_t xbee_receive_packet()
 {
     while(!xbee_attn())                     // Wait for the device to respond
         ;                                   // FIXME - implement a timeout
@@ -302,9 +305,9 @@ XBEE_TXN_STATUS_t xbee_receive_packet()
 // for and then reads the response packet.  Command parameters must have been placed in the
 // <xbee_tx> buffer by the caller.  The length of the parameter data must be passed in <param_len>.
 //
-XBEE_TXN_STATUS_t xbee_do_at_command(const AT_CMD_t command, const uint8_t param_len)
+XBeeTxnStatus_t xbee_do_at_command(const XBeeATCmd_t command, const uint8_t param_len)
 {
-    XBEE_TXN_STATUS_t ret;
+    XBeeTxnStatus_t ret;
 
     ret = xbee_send_at_command(command, param_len);
     if(!(ret & XBEE_TX_SUCCESS))
@@ -314,13 +317,13 @@ XBEE_TXN_STATUS_t xbee_do_at_command(const AT_CMD_t command, const uint8_t param
     if(ret & XBEE_RX_SUCCESS)
     {
         // Ensure that the received frame is an AT command response
-        if(xbee_rx.frame_type != XBEE_FRAME_AT_COMMAND_RESPONSE)
+        if(xbee_rx.frame_type != XBeeFrameATCommandResponse)
         {
             debug_printf("E: AT%c%c: unexpected response frame type %02x\n",
                             command, command >> 8, xbee_rx.frame_type);
             return XBEE_RX_WRONG_FRAME;
         }
-        else if(xbee_rx.at_resp.status != AT_CMD_OK)
+        else if(xbee_rx.at_resp.status != XBeeATCmdOK)
             debug_printf("E: AT%c%c: cmd failed: %02x\n", command, command >> 8,
                             xbee_rx.at_resp.status);
         else
@@ -351,27 +354,27 @@ void xbee_configure()
 
         // The first received frame should be a modem status frame with its status byte set to
         // 0x00, indicating a hardware reset.
-        if(!(ret & XBEE_RX_SUCCESS) || (xbee_rx.frame_type != XBEE_FRAME_MODEM_STATUS) ||
-           (xbee_rx.ms.status != MODEM_STATUS_HARDWARE_RESET))
+        if(!(ret & XBEE_RX_SUCCESS) || (xbee_rx.frame_type != XBeeFrameModemStatus) ||
+           (xbee_rx.ms.status != XBeeModemStatusHardwareReset))
             continue;                       // Try again
 
         // Send an ATD9 command to configure pin DIO9 as ON/nSLEEP
-        xbee_tx.at.parameter_value[0] = PIN_CFG_ALTERNATE_FUNCTION;
+        xbee_tx.at.parameter_value[0] = XBeePinCfgAlternateFunction;
 
-        ret = xbee_do_at_command(AT_CMD_ATD9, 1);
-        if(!(ret & XBEE_RX_SUCCESS) || (xbee_rx.at_resp.status != AT_CMD_OK))
+        ret = xbee_do_at_command(XBeeATCmdATD9, 1);
+        if(!(ret & XBEE_RX_SUCCESS) || (xbee_rx.at_resp.status != XBeeATCmdOK))
             continue;                       // Try again
 
         // Send an ATD8 command to configure pin DIO8 as DTR/SLEEP_RQ
-        xbee_tx.at.parameter_value[0] = PIN_CFG_ALTERNATE_FUNCTION;
-        ret = xbee_do_at_command(AT_CMD_ATD8, 1);
-        if(!(ret & XBEE_RX_SUCCESS) || (xbee_rx.at_resp.status != AT_CMD_OK))
+        xbee_tx.at.parameter_value[0] = XBeePinCfgAlternateFunction;
+        ret = xbee_do_at_command(XBeeATCmdATD8, 1);
+        if(!(ret & XBEE_RX_SUCCESS) || (xbee_rx.at_resp.status != XBeeATCmdOK))
             continue;                       // Try again
 
         // TODO: set sleep mode (SM) = pin sleep
-        xbee_tx.at.parameter_value[0] = SLEEP_MODE_PIN_SLEEP;
-        ret = xbee_do_at_command(AT_CMD_ATSM, 1);
-        if(!(ret & XBEE_RX_SUCCESS) || (xbee_rx.at_resp.status != AT_CMD_OK))
+        xbee_tx.at.parameter_value[0] = XBeeSleepModePinSleep;
+        ret = xbee_do_at_command(XBeeATCmdATSM, 1);
+        if(!(ret & XBEE_RX_SUCCESS) || (xbee_rx.at_resp.status != XBeeATCmdOK))
             continue;                       // Try again
 
         break;
