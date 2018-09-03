@@ -17,9 +17,9 @@ static GPIOPin_t SPI_nSS;
 // peripheral: byte-order is hard-wired to MSB-first, 2x-clock mode is disabled, buffered mode is
 // enabled, and nSS is ignored.
 //
-void spi0_configure_master(const SPI_PINSET_t pinset, const SPI_CLK_DIV_t div)
+void spi0_configure_master(const SPIPinset_t pinset, const SPIClkDiv_t div)
 {
-    if(pinset == SPI_PINSET_DEFAULT)
+    if(pinset == SPIPinsetDefault)
     {
         PORTMUX_CTRLB = PORTMUX_SPI0_DEFAULT_gc;
         SPI_nSS = PIN_SPI_nSS_DEFAULT;

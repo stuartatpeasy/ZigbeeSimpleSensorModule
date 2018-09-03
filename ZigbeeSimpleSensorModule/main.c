@@ -9,14 +9,11 @@
 #include <avr/io.h>
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
-//#include <util/delay.h>
-#include "lib/adc.h"
 #include "lib/clk.h"
 #include "lib/debug.h"
 #include "lib/gpio.h"
+#include "lib/rtc.h"
 #include "lib/spi.h"
-#include "lib/usart.h"
-#include "lib/vref.h"
 #include "sensors.h"
 #include "xbee/xbee.h"
 
@@ -73,7 +70,7 @@ int main(void)
     pclk_enable();                                  // Enable peripheral clock
 
     // Configure, activate and enable the SPI port
-    spi0_configure_master(SPI_PINSET_ALTERNATE, SPI_CLK_DIV4);
+    spi0_configure_master(SPIPinsetAlternate, SPIClkDiv4);
     spi0_port_activate(1);
     spi0_enable(1);
 
@@ -82,31 +79,14 @@ int main(void)
 
     debug_init();                                   // Init debugging - this is a NOP in release mode
 
-    //
-    // Configure internal voltage reference and ADC
-    //
-    vref_set(VREF_ADC0, VREF_2V5);      		    // Select 2.5V internal reference for ADCs
-
-    adc_set_vref(ADC_REF_INTERNAL, 1);              // Set ADC ref voltage and reduce sample cap
-    adc_set_prescaler(ADC_PRESCALE_DIV_64);         // Set ADC clock = main clock / 64
-    adc_set_initdelay(ADC_INITDELAY_64);            // Set ADC startup delay to 64 ADC clocks
-
-    adc_configure_input(PIN_AIN_VBATT);             // }
-    adc_configure_input(PIN_AIN_TEMP);              // } Configure analogue inputs as ADC input pins
-    adc_configure_input(PIN_AIN_LIGHT);             // }
-
 	//
 	// Configure RTC and periodic interrupt timer (PIT)
 	//
+    rtc_set_clock(RTCClkInt1K);                     // Select 1kHz ULP osc output as RTC clock
 
-	// Select the 1kHz output from the ultra-low-power internal 32kHz oscillator as the source clock
-	RTC_CLKSEL = RTC_CLKSEL_INT1K_gc;
-
-	// Set the number of RTC clock cycles between periodic interrupts to 8192, giving 8.192 seconds
-	// between PIT interrupts; also set the PIT enable flag.
-	RTC_PITCTRLA = RTC_PERIOD_CYC8192_gc | RTC_PITEN_bm;
-
-	RTC_PITINTCTRL = RTC_PI_bm;                     // Enable PIT interrupts
+    rtc_set_pit_period(RTCPITPeriod_8192);          // Set PIT IRQ period to 8192 RTC cycles
+    rtc_enable_pit(1);                              // Enable periodic interrupt timer
+    rtc_enable_pit_irq(1);                          // Enable periodic interrupt timer interrupts
 
     sensor_init();                                  // Initialise sensors
     xbee_init();                                    // Initialise the XBee module interface

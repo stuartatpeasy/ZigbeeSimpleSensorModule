@@ -20,7 +20,7 @@ static char debug_buf[DEBUG_BUF_LEN];
 void debug_init()
 {
     // Configure UART as debug channel
-    usart0_configure_io(USART_PINSET_DEFAULT);
+    usart0_configure_io(USARTPinsetDefault);
     usart0_set_baud_rate(DEBUG_BAUD_RATE);
     usart0_enable(USART_ENABLE_RX | USART_ENABLE_TX);
     usart0_puts_p(PSTR("\n\nDebug mode\n"));

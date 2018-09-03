@@ -9,23 +9,25 @@
 #include <avr/io.h>
 
 
-// Constants used by spi0_configure_master() to determine whether to use the default or alternative
-// pin-set for SPI0
-typedef enum SPI_PINSET
+// SPIPinset_t - constants used by spi0_configure_master() to determine whether to use the default
+// or alternative pin-set for SPI0
+//
+typedef enum SPIPinset
 {
-    SPI_PINSET_DEFAULT = 0,
-    SPI_PINSET_ALTERNATE = 1
-} SPI_PINSET_t;
+    SPIPinsetDefault    = 0,        // Use default uC pin-set for SPI interface
+    SPIPinsetAlternate  = 1         // Use alternate uC pin-set for SPI interface
+} SPIPinset_t;
 
 
-// Constants used by spi0_configure_master() to set the SPI clock prescaler
-typedef enum SPI_CLK_DIV
+// SPIClkDiv_t - constants used by spi0_configure_master() to set the SPI clock prescaler
+//
+typedef enum SPIClkDiv
 {
-    SPI_CLK_DIV4 = SPI_PRESC_DIV4_gc,
-    SPI_CLK_DIV16 = SPI_PRESC_DIV16_gc,
-    SPI_CLK_DIV64 = SPI_PRESC_DIV64_gc,
-    SPI_CLK_DIV128 = SPI_PRESC_DIV128_gc
-} SPI_CLK_DIV_t;
+    SPIClkDiv4      = SPI_PRESC_DIV4_gc,        // SPI clock = PCLK/4
+    SPIClkDiv16     = SPI_PRESC_DIV16_gc,       // SPI clock = PCLK/16
+    SPIClkDiv64     = SPI_PRESC_DIV64_gc,       // SPI clock = PCLK/64
+    SPIClkDiv128    = SPI_PRESC_DIV128_gc       // SPI clock = PCLK/128
+} SPIClkDiv_t;
 
 
 // spi0_flush_tx() - wait for SPI transmission to complete by busy-waiting on the TXCIF bit in the
@@ -72,7 +74,7 @@ typedef enum SPI_CLK_DIV
 #define spi0_read()         SPI0_DATA
 
 
-void spi0_configure_master(const SPI_PINSET_t pinset, const SPI_CLK_DIV_t div);
+void spi0_configure_master(const SPIPinset_t pinset, const SPIClkDiv_t div);
 void spi0_port_activate(const uint8_t activate);
 void spi0_enable(const uint8_t enable);
 void spi0_slave_select(const uint8_t select);

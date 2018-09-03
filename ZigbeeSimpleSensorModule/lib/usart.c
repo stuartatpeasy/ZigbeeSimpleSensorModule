@@ -21,11 +21,11 @@ static const uint8_t hex_map[16] PROGMEM = {'0', '1', '2', '3', '4', '5', '6', '
 // an output; the RXD pin is made an input.  Interrupts must be disabled when this function is
 // called.
 //
-void usart0_configure_io(const USART_PINSET_t pinset)
+void usart0_configure_io(const USARTPinset_t pinset)
 {
     GPIOPin_t rxd, txd;
 
-    if(pinset == USART_PINSET_DEFAULT)
+    if(pinset == USARTPinsetDefault)
     {
         PORTMUX_CTRLB &= ~PORTMUX_USART0_ALTERNATE_gc;  // Select the default pin-set for USART0
         rxd = PIN_USART_RXD_DEFAULT;
@@ -45,7 +45,7 @@ void usart0_configure_io(const USART_PINSET_t pinset)
 }
 
 
-uint8_t usart0_configure_port(const uint32_t baud, const uint8_t bpw, const USART_PARITY_t parity)
+uint8_t usart0_configure_port(const uint32_t baud, const uint8_t bpw, const USARTParity_t parity)
 {
     if((bpw < BPW_MIN) || (bpw > BPW_MAX))
         return 0;

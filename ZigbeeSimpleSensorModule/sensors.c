@@ -13,9 +13,9 @@
 #include <util/delay.h>
 
 
-#define ADC_VBATT				ADC_CHANNEL_1       // Battery voltage input
-#define ADC_TEMP				ADC_CHANNEL_2       // Thermistor input
-#define ADC_LIGHT				ADC_CHANNEL_3       // Light sensor input
+#define ADCVBatt				ADCChannel1         // Battery voltage input
+#define ADCTemp				    ADCChannel2         // Thermistor input
+#define ADCLight				ADCChannel3         // Light sensor input
 
 
 // Struct which accumulates sensor values
@@ -30,11 +30,23 @@ static SensorReadings_t acc;
 static const uint8_t avg_len = 8;
 
 
-// sensor_init() - initialise sensor system by configuring the SENSOR_nENABLE pin as an output,
-// and performing an initial read of the sensors.
+// sensor_init() - initialise sensor system by configuring voltage reference and ADC modules,
+// making the SENSOR_nENABLE pin an output, and performing an initial read of the sensors.
 //
 void sensor_init()
 {
+    // Configure voltage reference module
+    vref_set(VRefADC0, VRef2V5);      		        // Select 2.5V internal reference for ADCs
+
+    // Configure ADC module
+    adc_set_vref(ADCRefInternal, 1);                // Set ADC ref voltage and reduce sample cap
+    adc_set_prescaler(ADCPrescaleDiv64);            // Set ADC clock = main clock / 64
+    adc_set_initdelay(ADCInitDelay64);              // Set ADC startup delay to 64 ADC clocks
+
+    adc_configure_input(PIN_AIN_VBATT);             // }
+    adc_configure_input(PIN_AIN_TEMP);              // } Configure analogue inputs as ADC input pins
+    adc_configure_input(PIN_AIN_LIGHT);             // }
+
     acc.vbatt = 0;
     acc.light = 0;
     acc.temp = 0;
@@ -42,6 +54,9 @@ void sensor_init()
     gpio_make_output(PIN_SENSOR_nENABLE);
     sensor_read();
 
+    // Multiply the first set of readings by the length of the moving average, so that the global
+    // accumulator contains a correctly-scaled value.  This value will always be divided by
+    // <avg_len> before being used.
     acc.vbatt *= avg_len;
     acc.light *= avg_len;
     acc.temp *= avg_len;
@@ -67,22 +82,22 @@ void sensor_read()
 {
 	sensor_activate(1);                         // Enable analogue sensors
 
-    vref_enable(VREF_ADC0, 1);      			// Enable ADC voltage reference
+    vref_enable(VRefADC0, 1);      			// Enable ADC voltage reference
     adc_enable(1);                              // Enable ADC module
 
 	_delay_us(50);								// Wait for the sensors to stabilise
 
     acc.light -= ((acc.light + (avg_len / 2)) / avg_len);
-    acc.light += adc_convert_channel(ADC_LIGHT);
+    acc.light += adc_convert_channel(ADCLight);
 
     acc.temp -= ((acc.temp + (avg_len / 2)) / avg_len);
-    acc.temp += adc_convert_channel(ADC_TEMP);
+    acc.temp += adc_convert_channel(ADCTemp);
 
     acc.vbatt -= ((acc.vbatt + (avg_len / 2)) / avg_len);
-    acc.vbatt += adc_convert_channel(ADC_VBATT);
+    acc.vbatt += adc_convert_channel(ADCVBatt);
 
     adc_enable(0);                              // Disable ADC
-    vref_enable(VREF_ADC0, 0);          		// Disable voltage reference
+    vref_enable(VRefADC0, 0);          		// Disable voltage reference
 
 	sensor_activate(0);                         // Disable analogue sensors
 
