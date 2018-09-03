@@ -46,10 +46,10 @@ void rtc_enable(const uint8_t enable)
 }
 
 
-// rtc_enable_pit() enable (if <enable> is non-zero) or disable (if <enable> equals zero) the real-
+// rtc_pit_enable() enable (if <enable> is non-zero) or disable (if <enable> equals zero) the real-
 // time counter (RTC)'s periodic interrupt timer (PIT).
 //
-void rtc_enable_pit(const uint8_t enable)
+void rtc_pit_enable(const uint8_t enable)
 {
     rtc_pitctrla_sync_wait();
     if(enable)
@@ -59,23 +59,32 @@ void rtc_enable_pit(const uint8_t enable)
 }
 
 
-// rtc_set_pit_period() - set the "period" (number of RTC clock cycles) between successive PIT
+// rtc_pit_set_period() - set the "period" (number of RTC clock cycles) between successive PIT
 // interrupts.
 //
-void rtc_set_pit_period(const RTCPITPeriod_t period)
+void rtc_pit_set_period(const RTCPITPeriod_t period)
 {
     rtc_pitctrla_sync_wait();
     RTC_PITCTRLA = (RTC_PITCTRLA & ~RTC_PERIOD_gm) | period;
 }
 
 
-// rtc_enable_pit_irq() - enable (if <enable> is non-zero) or disable (if <enable> equals zero) the
+// rtc_pit_irq_enable() - enable (if <enable> is non-zero) or disable (if <enable> equals zero) the
 // real-time counter (RTC)'s periodic interrupt timer (PIT) interrupt.
 //
-void rtc_enable_pit_irq(const uint8_t enable)
+void rtc_pit_irq_enable(const uint8_t enable)
 {
     if(enable)
         RTC_PITINTCTRL |= RTC_PI_bm;
     else
         RTC_PITINTCTRL &= ~RTC_PI_bm;
+}
+
+
+// rtc_pit_irq_acknowledge() - acknowledge a PIT interrupt, enabling the next interrupt to occur
+// after the PIT period has elapsed.
+//
+void rtc_pit_irq_acknowledge()
+{
+    RTC_PITINTFLAGS = 1;    // Clear periodic interrupt flag
 }

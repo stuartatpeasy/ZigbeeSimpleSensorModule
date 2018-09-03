@@ -33,14 +33,14 @@ typedef struct GPIOPin
 //
 typedef enum GPIOAction
 {
-    GPIOAction_DIRSET = 0,
-    GPIOAction_DIRCLR = 1,
-    GPIOAction_OUTSET = 2,
-    GPIOAction_OUTCLR = 3,
-    GPIOAction_READ = 4,
-    GPIOAction_DIRGET = 5,
-    GPIOAction_PINCTRL = 6,
-    GPIOAction_end
+    GPIOActionDirSet    = 0,
+    GPIOActionDirClr    = 1,
+    GPIOActionOutSet    = 2,
+    GPIOActionOutClr    = 3,
+    GPIOActionRead      = 4,
+    GPIOActionDirGet    = 5,
+    GPIOActionPinCtrl   = 6,
+    GPIOAction_end                  // Placeholder value
 } GPIOAction_t;
 
 
@@ -48,12 +48,12 @@ typedef enum GPIOAction
 //
 typedef enum GPIOSense
 {
-    GPIOSense_INTDISABLE    = PORT_ISC_INTDISABLE_gc,
-    GPIOSense_BOTHEDGES     = PORT_ISC_BOTHEDGES_gc,
-    GPIOSense_RISING        = PORT_ISC_RISING_gc,
-    GPIOSense_FALLING       = PORT_ISC_FALLING_gc,
-    GPIOSense_INPUTDISABLE  = PORT_ISC_INPUT_DISABLE_gc,
-    GPIOSense_LEVEL         = PORT_ISC_LEVEL_gc
+    GPIOSenseIntDisable     = PORT_ISC_INTDISABLE_gc,
+    GPIOSenseBothEdges      = PORT_ISC_BOTHEDGES_gc,
+    GPIOSenseRising         = PORT_ISC_RISING_gc,
+    GPIOSenseFalling        = PORT_ISC_FALLING_gc,
+    GPIOSenseInputDisable   = PORT_ISC_INPUT_DISABLE_gc,
+    GPIOSenseLevel          = PORT_ISC_LEVEL_gc
 } GPIOSense_t;
 
 
@@ -75,12 +75,12 @@ typedef enum GPIOSense
 void gpio_action_write(const GPIOPin_t pin, const GPIOAction_t action);
 uint8_t gpio_action_read(const GPIOPin_t pin, const GPIOAction_t action);
 
-#define gpio_make_output(pin)   gpio_action_write(pin, GPIOAction_DIRSET)
-#define gpio_make_input(pin)    gpio_action_write(pin, GPIOAction_DIRCLR)
-#define gpio_set(pin)           gpio_action_write(pin, GPIOAction_OUTSET)
-#define gpio_clear(pin)         gpio_action_write(pin, GPIOAction_OUTCLR)
-#define gpio_read(pin)          gpio_action_read(pin, GPIOAction_READ)
-#define gpio_get_dir(pin)       gpio_action_read(pin, GPIOAction_DIRGET)
+#define gpio_make_output(pin)   gpio_action_write(pin, GPIOActionDirSet)
+#define gpio_make_input(pin)    gpio_action_write(pin, GPIOActionDirClr)
+#define gpio_set(pin)           gpio_action_write(pin, GPIOActionOutSet)
+#define gpio_clear(pin)         gpio_action_write(pin, GPIOActionOutClr)
+#define gpio_read(pin)          gpio_action_read(pin, GPIOActionRead)
+#define gpio_get_dir(pin)       gpio_action_read(pin, GPIOActionDirGet)
 
 void gpio_wait_high(const GPIOPin_t pin);
 void gpio_wait_low(const GPIOPin_t pin);

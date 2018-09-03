@@ -163,8 +163,8 @@ typedef enum XBeeTXDiscoveryStatus
 } XBeeTXDiscoveryStatus_t;
 
 
-// NodeIDSrcEvent_t - enumeration of values of the <source_event> field in a node identification
-// indicator frame
+// XBeeNodeIDSrcEvent_t - enumeration of values of the <source_event> field in a node
+// identification indicator frame
 //
 typedef enum XBeeNodeIDSrcEvent
 {
@@ -219,6 +219,7 @@ typedef enum XBeeArgPinCfg
 // <frame_type> field - i.e. it must equal the length of the "frame-specific data" field.  E.g. for
 // a frame of type XBeeFrameATcommand, sending the AT command "VR" with no arguments, len must
 // equal 3: one byte for the frame ID, plus two bytes for the command name.
+//
 typedef struct __attribute__((packed)) XBeePacketBuf
 {
     uint16_t            len;                // Always in device (little-endian) order

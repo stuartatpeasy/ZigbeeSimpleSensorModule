@@ -50,7 +50,7 @@ uint8_t gpio_action_read(const GPIOPin_t pin, const GPIOAction_t action)
 //
 void gpio_wait_high(const GPIOPin_t pin)
 {
-    volatile uint8_t * const reg = register_address(pin, GPIOAction_READ);
+    volatile uint8_t * const reg = register_address(pin, GPIOActionRead);
 
     while(!(*reg & (1 << pin.pin)))
         ;
@@ -61,7 +61,7 @@ void gpio_wait_high(const GPIOPin_t pin)
 //
 void gpio_wait_low(const GPIOPin_t pin)
 {
-    volatile uint8_t * const reg = register_address(pin, GPIOAction_READ);
+    volatile uint8_t * const reg = register_address(pin, GPIOActionRead);
 
     while(*reg & (1 << pin.pin))
         ;
@@ -72,5 +72,5 @@ void gpio_wait_low(const GPIOPin_t pin)
 //
 void gpio_set_sense(const GPIOPin_t pin, const GPIOSense_t sense)
 {
-    *(register_address(pin, GPIOAction_PINCTRL) + pin.pin) = sense;
+    *(register_address(pin, GPIOActionPinCtrl) + pin.pin) = sense;
 }

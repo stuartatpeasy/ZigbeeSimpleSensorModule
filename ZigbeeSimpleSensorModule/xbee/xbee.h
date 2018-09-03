@@ -23,8 +23,8 @@ XBeePacketBuf_t xbee_rx, xbee_tx;
 // XBeePowerState_t - enumeration representing available XBee power states
 typedef enum XBeePowerState
 {
-    XBEE_SLEEP,
-    XBEE_WAKE
+    XBeePowerStateSleep,
+    XBeePowerStateWake
 } XBeePowerState_t;
 
 
@@ -32,6 +32,7 @@ typedef enum XBeePowerState
 typedef uint8_t XBeeTxnStatus_t;
 
 // Flags used in the return value from xbee_spi_transaction(), xbee_send_at_command(), etc.
+//
 #define XBEE_TX_SUCCESS                 (0x01)      // Packet was transmitted successfully
 #define XBEE_RX_SUCCESS                 (0x02)      // Packet received successfully during transmit
 #define XBEE_TX_BAD_FRAME_SIZE          (0x04)      // Transmit frame too long, or zero-length

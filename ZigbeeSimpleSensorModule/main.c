@@ -29,22 +29,22 @@ void handle_periodic_irq()
 
     if(!(counter & 0x07))
     {
-        xbee_set_power_state(XBEE_WAKE);        // Signal the XBee module to awaken
-        xbee_wait_power_state(XBEE_WAKE);       // Wait for the XBee module to wake up
+        xbee_set_power_state(XBeePowerStateWake);   // Signal the XBee module to awaken
+        xbee_wait_power_state(XBeePowerStateWake);  // Wait for the XBee module to wake up
 
-        spi0_port_activate(1);                  // Activate SPI port pins
-        spi0_enable(1);                         // Enable SPI interface
+        spi0_port_activate(1);                      // Activate SPI port pins
+        spi0_enable(1);                             // Enable SPI interface
 
         // Transmit data
         spi0_slave_select(1);
         // ... transmit all the datas ...
 
-        spi0_slave_select(0);                   // De-select the SPI slave
-        xbee_set_power_state(XBEE_SLEEP);       // Ask the XBee module to go to sleep
+        spi0_slave_select(0);                       // De-select the SPI slave
+        xbee_set_power_state(XBeePowerStateSleep);  // Ask the XBee module to go to sleep
     }
 
-    spi0_enable(0);                             // Disable SPI peripheral
-    spi0_port_activate(0);                      // Deactivate the port
+    spi0_enable(0);                                 // Disable SPI peripheral
+    spi0_port_activate(0);                          // Deactivate the port
 
     gpio_clear(PIN_LED);
 }
@@ -56,7 +56,7 @@ void handle_periodic_irq()
 ISR(RTC_PIT_vect)
 {
     handle_periodic_irq();
-    RTC_PITINTFLAGS = 1;	                    // Clear periodic interrupt flag
+    rtc_pit_irq_acknowledge();
 }
 
 
@@ -78,20 +78,20 @@ int main(void)
     gpio_make_output(PIN_LED);                      // Make the LED control pin an output
     gpio_clear(PIN_LED);                            // Switch off the LED
 
-    debug_init();                                   // Init debugging - this is a NOP in release mode
+    debug_init();                                   // Init debugging (NOP in release mode)
 
     // Configure RTC and periodic interrupt timer (PIT)
     rtc_set_clock(RTCClkInt1K);                     // Select 1kHz ULP osc output as RTC clock
 
-    rtc_set_pit_period(RTCPITPeriod_8192);          // Set PIT IRQ period to 8192 RTC cycles
-    rtc_enable_pit(1);                              // Enable periodic interrupt timer
-    rtc_enable_pit_irq(1);                          // Enable periodic interrupt timer interrupts
+    rtc_pit_set_period(RTCPITPeriod8192);           // Set PIT IRQ period to 8192 RTC cycles
+    rtc_pit_enable(1);                              // Enable periodic interrupt timer
+    rtc_pit_irq_enable(1);                          // Enable periodic interrupt timer interrupts
 
     // Configure and initialise external hardware
     sensor_init();                                  // Initialise sensors
     xbee_init();                                    // Initialise the XBee module interface
     xbee_configure();                               // Set initial configuration in the XBee module
-    xbee_set_power_state(XBEE_SLEEP);               // Put the XBee module to sleep
+    xbee_set_power_state(XBeePowerStateSleep);      // Put the XBee module to sleep
 
     debug_flush();                                  // Flush early debug messages, if any
 

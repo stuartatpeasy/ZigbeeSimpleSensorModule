@@ -46,7 +46,7 @@ void adc_set_initdelay(const ADCInitDelay_t delay)
 //
 void adc_configure_input(const GPIOPin_t pin)
 {
-    gpio_set_sense(pin, GPIOSense_INPUTDISABLE);
+    gpio_set_sense(pin, GPIOSenseInputDisable);
     gpio_make_input(pin);
 }
 

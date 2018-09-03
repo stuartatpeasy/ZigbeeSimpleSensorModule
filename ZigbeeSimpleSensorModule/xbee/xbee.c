@@ -68,18 +68,18 @@ void xbee_reset()
 
 void xbee_set_power_state(const XBeePowerState_t state)
 {
-    if(state == XBEE_WAKE)
+    if(state == XBeePowerStateWake)
         gpio_clear(PIN_XBEE_SLEEP_RQ);
-    else if(state == XBEE_SLEEP)
+    else if(state == XBeePowerStateSleep)
         gpio_set(PIN_XBEE_SLEEP_RQ);
 }
 
 
 void xbee_wait_power_state(const XBeePowerState_t state)
 {
-    if(state == XBEE_WAKE)
+    if(state == XBeePowerStateWake)
         gpio_wait_high(PIN_XBEE_ON_nSLEEP);
-    else if(state == XBEE_SLEEP)
+    else if(state == XBeePowerStateSleep)
         gpio_wait_low(PIN_XBEE_ON_nSLEEP);
 }
 
