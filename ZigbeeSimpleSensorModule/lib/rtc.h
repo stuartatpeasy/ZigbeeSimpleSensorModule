@@ -1,5 +1,5 @@
-#ifndef RTC_H_INC
-#define RTC_H_INC
+#ifndef LIB_RTC_H_INC
+#define LIB_RTC_H_INC
 /*
     rtc.h - declarations for helper functions relating to the uC's real-time counter
 

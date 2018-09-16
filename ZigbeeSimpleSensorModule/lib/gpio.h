@@ -1,5 +1,5 @@
-#ifndef GPIO_H_INC
-#define GPIO_H_INC
+#ifndef LIB_GPIO_H_INC
+#define LIB_GPIO_H_INC
 /*
     gpio.h - declarations for helper functions relating to GPIO ports
 

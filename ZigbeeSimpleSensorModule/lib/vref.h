@@ -1,5 +1,5 @@
-#ifndef VREF_H_INC
-#define VREF_H_INC
+#ifndef LIB_VREF_H_INC
+#define LIB_VREF_H_INC
 /*
     vref.h: declarations relating to the uC's voltage reference (VRef) module
 

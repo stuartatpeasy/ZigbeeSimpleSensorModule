@@ -1,5 +1,5 @@
-#ifndef ADC_H_INC
-#define ADC_H_INC
+#ifndef LIB_ADC_H_INC
+#define LIB_ADC_H_INC
 /*
     adc.h: declarations relating to the uC's ADC module
 

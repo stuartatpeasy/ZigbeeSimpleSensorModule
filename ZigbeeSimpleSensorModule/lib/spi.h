@@ -1,5 +1,5 @@
-#ifndef SPI_H_INC
-#define SPI_H_INC
+#ifndef LIB_SPI_H_INC
+#define LIB_SPI_H_INC
 /*
     spi.h - declarations related to SPI helper functions
 

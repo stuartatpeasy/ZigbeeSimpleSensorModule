@@ -1,5 +1,5 @@
-#ifndef USART_H_INC
-#define USART_H_INC
+#ifndef LIB_USART_H_INC
+#define LIB_USART_H_INC
 /*
     usart.h: USART helper function declarations
 

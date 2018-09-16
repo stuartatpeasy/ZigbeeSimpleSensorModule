@@ -1,5 +1,5 @@
-#ifndef CLK_H_INC
-#define CLK_H_INC
+#ifndef LIB_CLK_H_INC
+#define LIB_CLK_H_INC
 /*
     clk.h: declarations of helper functions relating to clock control
 

@@ -1,5 +1,5 @@
-#ifndef TWI_H_INC
-#define TWI_H_INC
+#ifndef LIB_TWI_H_INC
+#define LIB_TWI_H_INC
 /*
     twi.h - declarations relating to the two-wire interface (TWI) peripheral
 

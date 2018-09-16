@@ -1,5 +1,5 @@
-#ifndef DEBUG_H_INC
-#define DEBUG_H_INC
+#ifndef LIB_DEBUG_H_INC
+#define LIB_DEBUG_H_INC
 /*
     debug.h - various debugging macros and declarations
 

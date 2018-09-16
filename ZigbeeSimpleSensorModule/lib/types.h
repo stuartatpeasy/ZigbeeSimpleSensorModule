@@ -1,5 +1,5 @@
-#ifndef TYPES_H_INC
-#define TYPES_H_INC
+#ifndef LIB_TYPES_H_INC
+#define LIB_TYPES_H_INC
 /*
     types.h - declarations of types shared between modules
 
