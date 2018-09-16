@@ -6,10 +6,11 @@
 
 #include "debug.h"
 
-#ifdef _DEBUG
+#ifdef DEBUG
 
 #include <stdarg.h>
 #include <stdio.h>
+#include "types.h"
 
 
 static char debug_buf[DEBUG_BUF_LEN];
@@ -20,7 +21,7 @@ static char debug_buf[DEBUG_BUF_LEN];
 void debug_init()
 {
     // Configure UART as debug channel
-    usart0_configure_io(USARTPinsetDefault);
+    usart0_configure_io(PinsetDefault);
     usart0_set_baud_rate(DEBUG_BAUD_RATE);
     usart0_enable(USART_ENABLE_RX | USART_ENABLE_TX);
     usart0_puts_p(PSTR("\n\nDebug mode\n"));
@@ -42,5 +43,18 @@ void debug_printf(char *fmt, ...)
 
     va_end(ap);
 }
+
+
+// debug_put_reg8_p() - write <msg> (a string which must be located in the program memory space) to
+// the debug channel, then write the string " = 0x" followed by the value of <regval> as a hex
+// string.  Finally write a carriage return.
+//
+void debug_put_reg8_p(const char *msg, const uint8_t regval)
+{
+    usart0_puts_p(msg);
+    debug_putstr_p(" = 0x");
+    debug_puthex_byte(regval);
+    debug_putchar('\n');
+};
 
 #endif

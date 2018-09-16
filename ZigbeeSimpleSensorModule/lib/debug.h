@@ -10,7 +10,7 @@
 #include <avr/pgmspace.h>
 
 
-#ifdef _DEBUG
+#ifdef DEBUG
 
 #define DEBUG_BAUD_RATE         (230400)
 #define DEBUG_BUF_LEN           (64)
@@ -24,6 +24,7 @@
 
 void debug_init();
 void debug_printf(char *fmt, ...);
+void debug_put_reg8_p(const char *msg, const uint8_t regval);
 
 #else
 
@@ -35,6 +36,7 @@ void debug_printf(char *fmt, ...);
 
 #define debug_init()
 #define debug_printf(fmt, ...)
+#define debug_put_reg8_p(msg, regval)
 
 #endif  // _DEBUG
 
