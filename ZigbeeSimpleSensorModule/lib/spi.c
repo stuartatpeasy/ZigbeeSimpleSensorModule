@@ -17,16 +17,16 @@ static GPIOPin_t SPI_nSS;
 // peripheral: byte-order is hard-wired to MSB-first, 2x-clock mode is disabled, buffered mode is
 // enabled, and nSS is ignored.
 //
-void spi0_configure_master(const SPIPinset_t pinset, const SPIClkDiv_t div)
+void spi0_configure_master(const Pinset_t pinset, const SPIClkDiv_t div)
 {
-    if(pinset == SPIPinsetDefault)
+    if(pinset == PinsetDefault)
     {
-        PORTMUX_CTRLB = PORTMUX_SPI0_DEFAULT_gc;
+        PORTMUX_CTRLB &= ~PORTMUX_SPI0_ALTERNATE_gc;
         SPI_nSS = PIN_SPI_nSS_DEFAULT;
     }
     else
     {
-        PORTMUX_CTRLB = PORTMUX_SPI0_ALTERNATE_gc;
+        PORTMUX_CTRLB |= PORTMUX_SPI0_ALTERNATE_gc;
         SPI_nSS = PIN_SPI_nSS_ALT;
     }
 
@@ -39,6 +39,12 @@ void spi0_configure_master(const SPIPinset_t pinset, const SPIClkDiv_t div)
 }
 
 
+// spi0_port_activate() - activate (if <activate> is non-zero) or deactivate (if <activate> equals
+// zero) the SPI port.  Activation entails configuring as outputs the pins associated with SPI
+// output signals.  Deactivation entails configuring all SPI pins as inputs.  In both cases,
+// "resting" (i.e. inactive and safe) logic levels are set on the port pins before each pin's
+// direction is set.
+//
 void spi0_port_activate(const uint8_t activate)
 {
     GPIOPin_t mosi, miso, sck;
@@ -62,7 +68,6 @@ void spi0_port_activate(const uint8_t activate)
     gpio_set(SPI_nSS);
     gpio_clear(mosi);
     gpio_clear(sck);
-
 
     gpio_make_input(miso);          // MISO is always an input
 

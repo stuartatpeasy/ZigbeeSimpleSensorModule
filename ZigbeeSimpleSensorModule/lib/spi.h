@@ -7,16 +7,7 @@
 */
 
 #include <avr/io.h>
-
-
-// SPIPinset_t - constants used by spi0_configure_master() to determine whether to use the default
-// or alternative pin-set for SPI0
-//
-typedef enum SPIPinset
-{
-    SPIPinsetDefault    = 0,        // Use default uC pin-set for SPI interface
-    SPIPinsetAlternate  = 1         // Use alternate uC pin-set for SPI interface
-} SPIPinset_t;
+#include "types.h"
 
 
 // SPIClkDiv_t - constants used by spi0_configure_master() to set the SPI clock prescaler
@@ -74,7 +65,7 @@ typedef enum SPIClkDiv
 #define spi0_read()         SPI0_DATA
 
 
-void spi0_configure_master(const SPIPinset_t pinset, const SPIClkDiv_t div);
+void spi0_configure_master(const Pinset_t pinset, const SPIClkDiv_t div);
 void spi0_port_activate(const uint8_t activate);
 void spi0_enable(const uint8_t enable);
 void spi0_slave_select(const uint8_t select);
