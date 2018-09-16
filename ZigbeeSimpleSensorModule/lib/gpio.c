@@ -9,7 +9,7 @@
 
 
 // Array of GPIO-manipulation registers
-volatile uint8_t * const reg_map[] PROGMEM =
+static volatile uint8_t * const reg_map[] PROGMEM =
 {
     &PORTA_DIRSET, &PORTA_DIRCLR, &PORTA_OUTSET, &PORTA_OUTCLR, &PORTA_IN, &PORTA_DIR, &PORTA_PIN0CTRL,
     &PORTB_DIRSET, &PORTB_DIRCLR, &PORTB_OUTSET, &PORTB_OUTCLR, &PORTB_IN, &PORTB_DIR, &PORTB_PIN0CTRL,
