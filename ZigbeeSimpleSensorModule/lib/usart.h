@@ -7,21 +7,12 @@
 */
 
 #include <avr/io.h>
+#include "types.h"
 
 
 #define BAUDREG_VAL_MIN         (0x004a)            // Minimum allowable value in the BAUD register
 #define BPW_MIN                 (5)                 // Minimum allowable bits-per-word
 #define BPW_MAX                 (8)                 // Maximum allowable bits-per-word
-
-
-// USARTPinset_t - constants used by usart0_configure_io() to determine whether to use the default
-// or alternative pin-set for USART0
-//
-typedef enum USARTPinset
-{
-    USARTPinsetDefault      = 0,        // USART uses uC default pin-set
-    USARTPinsetAlternate    = 1         // USART uses uC alternate pin-set
-} USARTPinset_t;
 
 
 // USARTParity_t - parity modes
@@ -72,7 +63,7 @@ typedef enum USARTParity
             } while (0)
 
 
-void usart0_configure_io(const USARTPinset_t pinset);
+void usart0_configure_io(const Pinset_t pinset);
 uint8_t usart0_configure_port(const uint32_t baud, const uint8_t bpw, const USARTParity_t parity);
 void usart0_enable(const uint8_t enable);
 void usart0_puthex_byte(const uint8_t data);
