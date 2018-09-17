@@ -229,8 +229,8 @@ static TWICmdStatus_t twi_sync_cmd(const uint8_t dev_addr, const uint8_t reg_add
     while(twi_bus_status() != TWIBusStateIdle)
         ;                           // Wait for the TWI bus to become idle
 
-    status = is_write ? twi_write_register(dev_addr, reg_addr, *data) :
-                        twi_read_register(dev_addr, reg_addr);
+    status = is_write ? twi_register_write(dev_addr, reg_addr, *data) :
+                        twi_register_read(dev_addr, reg_addr);
     if(status != TWICmdSuccess)
         return status;
 
@@ -245,43 +245,43 @@ static TWICmdStatus_t twi_sync_cmd(const uint8_t dev_addr, const uint8_t reg_add
 }
 
 
-// twi_read_register() - initiate an asynchronous read of the register with address <reg_addr> in
+// twi_register_read() - initiate an asynchronous read of the register with address <reg_addr> in
 // the device with address <dev_addr>.  Returns a value from the TWICmdStatus_t enumeration to
 // indicate the outcome of command initiation.
 //
-TWICmdStatus_t twi_read_register(const uint8_t dev_addr, const uint8_t reg_addr)
+TWICmdStatus_t twi_register_read(const uint8_t dev_addr, const uint8_t reg_addr)
 {
     return twi_cmd_start(dev_addr, reg_addr, 0, 0);
 }
 
 
-// twi_write_register() - initiate an asynchronous write of the register with address <reg_addr> in
+// twi_register_write() - initiate an asynchronous write of the register with address <reg_addr> in
 // the device with address <dev_addr>.  Returns a value from the TWICmdStatus_t enumeration to
 // indicate the outcome of command initiation.
 //
-TWICmdStatus_t twi_write_register(const uint8_t dev_addr, const uint8_t reg_addr, const uint8_t data)
+TWICmdStatus_t twi_register_write(const uint8_t dev_addr, const uint8_t reg_addr, const uint8_t data)
 {
     return twi_cmd_start(dev_addr, reg_addr, data, 1);
 }
 
 
-// twi_read_register_sync() - perform a synchronous read of the register with address <reg_addr> in
+// twi_sync_register_read() - perform a synchronous read of the register with address <reg_addr> in
 // the device with the address <dev_addr>.  If the read is successful, the value read from the
 // register will be returned through <data>.  Returns a value from the TWICmdStatus_t enumeration
 // to indicate the outcome of the command.
 //
-TWICmdStatus_t twi_read_register_sync(const uint8_t dev_addr, const uint8_t reg_addr,
+TWICmdStatus_t twi_sync_register_read(const uint8_t dev_addr, const uint8_t reg_addr,
                                uint8_t * const data)
 {
     return twi_sync_cmd(dev_addr, reg_addr, data, 0);
 }
 
 
-// twi_write_register_sync() - perform a synchronous write of the data in <data> to the register
+// twi_sync_register_write() - perform a synchronous write of the data in <data> to the register
 // with address <reg_addr> in the device with the address <dev_addr>.  Returns a value from the
 // TWICmdStatus_t enumeration to indicate the outcome of the command.
 //
-TWICmdStatus_t twi_write_register_sync(const uint8_t dev_addr, const uint8_t reg_addr,
+TWICmdStatus_t twi_sync_register_write(const uint8_t dev_addr, const uint8_t reg_addr,
                                        uint8_t data)
 {
     return twi_sync_cmd(dev_addr, reg_addr, &data, 1);

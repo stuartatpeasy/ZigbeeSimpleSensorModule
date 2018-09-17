@@ -85,5 +85,6 @@ uint8_t gpio_action_read(const GPIOPin_t pin, const GPIOAction_t action);
 void gpio_wait_high(const GPIOPin_t pin);
 void gpio_wait_low(const GPIOPin_t pin);
 void gpio_set_sense(const GPIOPin_t pin, const GPIOSense_t sense);
+void gpio_set_level(const GPIOPin_t pin, const uint8_t level);
 
 #endif

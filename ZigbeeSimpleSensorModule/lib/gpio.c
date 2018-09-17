@@ -74,3 +74,15 @@ void gpio_set_sense(const GPIOPin_t pin, const GPIOSense_t sense)
 {
     *(register_address(pin, GPIOActionPinCtrl) + pin.pin) = sense;
 }
+
+
+// gpio_set_level() - set pin <pin>, which is assumed to be an output, to logic 1 if <level> is
+// non-zero, or logic 0 if <level> equals zero.
+//
+void gpio_set_level(const GPIOPin_t pin, const uint8_t level)
+{
+    if(level)
+        gpio_set(pin);
+    else
+        gpio_clear(pin);
+}

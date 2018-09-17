@@ -54,12 +54,12 @@ uint8_t twi_set_clock(const TWISpeed_t speed);
 TWICmdState_t twi_cmd_get_state();
 uint8_t twi_cmd_state_busy();
 uint8_t twi_cmd_get_data();
-TWICmdStatus_t twi_read_register(const uint8_t dev_addr, const uint8_t reg_addr);
-TWICmdStatus_t twi_write_register(const uint8_t dev_addr, const uint8_t reg_addr,
+TWICmdStatus_t twi_register_read(const uint8_t dev_addr, const uint8_t reg_addr);
+TWICmdStatus_t twi_register_write(const uint8_t dev_addr, const uint8_t reg_addr,
                                   const uint8_t data);
-TWICmdStatus_t twi_read_register_sync(const uint8_t dev_addr, const uint8_t reg_addr,
+TWICmdStatus_t twi_sync_register_read(const uint8_t dev_addr, const uint8_t reg_addr,
                                       uint8_t * const data);
-TWICmdStatus_t twi_write_register_sync(const uint8_t dev_addr, const uint8_t reg_addr,
+TWICmdStatus_t twi_sync_register_write(const uint8_t dev_addr, const uint8_t reg_addr,
                                        uint8_t data);
 // TODO: reset_nack
 // TODO: reset_err
