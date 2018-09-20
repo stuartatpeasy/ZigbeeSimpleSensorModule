@@ -54,6 +54,7 @@ uint8_t twi_set_clock(const TWISpeed_t speed);
 TWICmdState_t twi_cmd_get_state();
 uint8_t twi_cmd_state_busy();
 uint8_t twi_cmd_get_data();
+void twi_cmd_reset_state();
 TWICmdStatus_t twi_register_read(const uint8_t dev_addr, const uint8_t reg_addr);
 TWICmdStatus_t twi_register_write(const uint8_t dev_addr, const uint8_t reg_addr,
                                   const uint8_t data);

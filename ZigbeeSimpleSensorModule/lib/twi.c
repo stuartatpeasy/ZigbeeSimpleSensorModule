@@ -37,6 +37,7 @@ static volatile struct TWICommand
 
 
 static TWIBusState_t twi_bus_status();
+static uint8_t twi_bus_ready();
 static uint8_t twi_cmd_start(const uint8_t dev_addr, const uint8_t reg_addr, const uint8_t data,
                              const uint8_t is_write);
 static TWICmdStatus_t twi_sync_cmd(const uint8_t dev_addr, const uint8_t reg_addr,
@@ -53,6 +54,9 @@ ISR(TWI0_TWIM_vect)
         if(TWI0_MSTATUS & TWI_RXACK_bm)
         {
             twi_command.state = TWICmdStateNack;            // NACK or no acknowledgment received
+
+            // Issue a STOP to end the transaction
+            TWI0_MCTRLB = (TWI0_MCTRLB & ~(TWI_MCMD_gm | TWI_ACKACT_bm)) | TWI_MCMD_STOP_gc;
             return;
         }
 
@@ -82,7 +86,7 @@ ISR(TWI0_TWIM_vect)
 
             case TWICmdDataWrite:
                 // Issue a STOP command
-                TWI0_MCTRLB = (TWI0_MCTRLB & ~TWI_MCMD_gm) | TWI_MCMD_STOP_gc;
+                TWI0_MCTRLB = (TWI0_MCTRLB & ~(TWI_MCMD_gm | TWI_ACKACT_bm)) | TWI_MCMD_STOP_gc;
                 twi_command.state = TWICmdStateIdle;
                 break;
 
@@ -99,6 +103,7 @@ ISR(TWI0_TWIM_vect)
             // Issue a NACK (to tell the slave that no more data is expected) and a STOP.
             TWI0_MCTRLB = (TWI0_MCTRLB & ~TWI_MCMD_gm) | TWI_MCMD_STOP_gc | TWI_ACKACT_bm;
             twi_command.data = TWI0_MDATA;
+
             twi_command.state = TWICmdStateIdle;
         }
         else
@@ -119,6 +124,9 @@ void twi_configure_master(const Pinset_t pinset)
 
     // Enable "smart mode" (for automatic ACK generation)
     TWI0_MCTRLA |= TWI_SMEN_bm;
+
+    // Force the bus to the "idle" state
+    TWI0_MSTATUS = TWI_BUSSTATE_IDLE_gc;
 
     twi_command.state = TWICmdStateIdle;
 }
@@ -180,6 +188,15 @@ uint8_t twi_cmd_get_data()
 }
 
 
+// twi_cmd_reset_state() - reset the current command state to "idle".  Should only be called to
+// clear a NACK/error condition in the previous command.
+//
+void twi_cmd_reset_state()
+{
+    twi_command.state = TWICmdStateIdle;
+}
+
+
 // twi_cmd_start() - helper function for twi_(read|write)_register().  Initiates an asynchronous
 // read (if <is_write> equals zero) or write (if <is_write> is non-zero) command specifying the
 // device with address <dev_addr> containing the register identified by <reg_addr>.  The <data>
@@ -226,8 +243,8 @@ static TWICmdStatus_t twi_sync_cmd(const uint8_t dev_addr, const uint8_t reg_add
     while(twi_cmd_state_busy())
         ;                           // Wait for any pending commands to complete
 
-    while(twi_bus_status() != TWIBusStateIdle)
-        ;                           // Wait for the TWI bus to become idle
+    while(!twi_bus_ready())
+        ;                           // Wait for the TWI bus to become available
 
     status = is_write ? twi_register_write(dev_addr, reg_addr, *data) :
                         twi_register_read(dev_addr, reg_addr);
@@ -238,8 +255,26 @@ static TWICmdStatus_t twi_sync_cmd(const uint8_t dev_addr, const uint8_t reg_add
         ;                           // Wait for the command to complete
 
     status = twi_cmd_get_state();
-    if(!is_write && (status == TWICmdSuccess))
-        *data = twi_cmd_get_data();
+
+    switch(status)
+    {
+        case TWICmdSuccess:
+            if(!is_write)
+                *data = twi_cmd_get_data();
+            break;
+
+        case TWICmdStateNack:
+        case TWICmdStateError:
+            // If the slave device didn't acknowledge us, or the command failed for any other
+            // reason, reset the state of the command object so that another command can be
+            // initiated.
+            twi_cmd_reset_state();
+            break;
+
+        default:
+            // Do nothing
+            break;
+    }
 
     return status;
 }
@@ -313,7 +348,9 @@ uint8_t twi_set_clock(const TWISpeed_t speed)
     else
         bus_freq = 100e3;
 
-    baud_val = ((pclk_freq / bus_freq) - 10) / 2;
+    // Calculate value for the MBAUD register.  Add 1 to the value to account for integer rounding;
+    // this is cheesy, but ensures that the specified baud rates are not exceeded.
+    baud_val = 1 + (((pclk_freq / bus_freq) - 10) / 2);
 
     TWI0_MBAUD = baud_val;
     twi_master_enable(was_enabled);
@@ -328,4 +365,15 @@ uint8_t twi_set_clock(const TWISpeed_t speed)
 static TWIBusState_t twi_bus_status()
 {
     return (TWIBusState_t) (TWI0_MSTATUS & TWI_BUSSTATE_gm);
+}
+
+
+// twi_bus_ready() - return non-zero if the TWI bus is "ready", i.e. idle or owned by this master.
+// Return zero in all other cases.
+//
+static uint8_t twi_bus_ready()
+{
+    const TWIBusState_t state = twi_bus_status();
+
+    return (state == TWIBusStateIdle) || (state == TWIBusStateOwner);
 }
