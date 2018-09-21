@@ -37,7 +37,6 @@ static volatile struct TWICommand
 
 
 static TWIBusState_t twi_bus_status();
-static uint8_t twi_bus_ready();
 static uint8_t twi_cmd_start(const uint8_t dev_addr, const uint8_t reg_addr, const uint8_t data,
                              const uint8_t is_write);
 static TWICmdStatus_t twi_sync_cmd(const uint8_t dev_addr, const uint8_t reg_addr,
@@ -88,6 +87,9 @@ ISR(TWI0_TWIM_vect)
                 // Issue a STOP command
                 TWI0_MCTRLB = (TWI0_MCTRLB & ~(TWI_MCMD_gm | TWI_ACKACT_bm)) | TWI_MCMD_STOP_gc;
                 twi_command.state = TWICmdStateIdle;
+
+                // Return the bus to the idle state
+                TWI0_MSTATUS = (TWI0_MSTATUS & ~TWI_BUSSTATE_gm) | TWI_BUSSTATE_IDLE_gc;
                 break;
 
             default:
@@ -103,6 +105,9 @@ ISR(TWI0_TWIM_vect)
             // Issue a NACK (to tell the slave that no more data is expected) and a STOP.
             TWI0_MCTRLB = (TWI0_MCTRLB & ~TWI_MCMD_gm) | TWI_MCMD_STOP_gc | TWI_ACKACT_bm;
             twi_command.data = TWI0_MDATA;
+
+            // Return the bus to the idle state
+            TWI0_MSTATUS = (TWI0_MSTATUS & ~TWI_BUSSTATE_gm) | TWI_BUSSTATE_IDLE_gc;
 
             twi_command.state = TWICmdStateIdle;
         }
@@ -243,8 +248,8 @@ static TWICmdStatus_t twi_sync_cmd(const uint8_t dev_addr, const uint8_t reg_add
     while(twi_cmd_state_busy())
         ;                           // Wait for any pending commands to complete
 
-    while(!twi_bus_ready())
-        ;                           // Wait for the TWI bus to become available
+    while(twi_bus_status() != TWIBusStateIdle)
+        ;                           // Wait for the TWI bus to become idle
 
     status = is_write ? twi_register_write(dev_addr, reg_addr, *data) :
                         twi_register_read(dev_addr, reg_addr);
@@ -365,15 +370,4 @@ uint8_t twi_set_clock(const TWISpeed_t speed)
 static TWIBusState_t twi_bus_status()
 {
     return (TWIBusState_t) (TWI0_MSTATUS & TWI_BUSSTATE_gm);
-}
-
-
-// twi_bus_ready() - return non-zero if the TWI bus is "ready", i.e. idle or owned by this master.
-// Return zero in all other cases.
-//
-static uint8_t twi_bus_ready()
-{
-    const TWIBusState_t state = twi_bus_status();
-
-    return (state == TWIBusStateIdle) || (state == TWIBusStateOwner);
 }
